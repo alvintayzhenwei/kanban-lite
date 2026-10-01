@@ -30,7 +30,12 @@ test("agent endpoint requires bearer and rejects browser origins and identity fo
   const { server, headers, call } = await setup(t);
   const health = await (await fetch(`${server.url}/health`)).json();
   assert.equal(health.agentProtocolVersion, 1);
-  for (const authorization of ["", "Bearer bad", `Bearer ${"é".repeat(64)}`]) {
+  for (const authorization of [
+    "",
+    "Bearer bad",
+    headers.Authorization.slice(7),
+    `Bearer ${"é".repeat(64)}`,
+  ]) {
     const response = await fetch(`${server.url}/agent/operation`, {
       method: "POST",
       headers: { ...headers, Authorization: authorization },

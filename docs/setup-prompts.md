@@ -1,10 +1,26 @@
 # Copy-paste setup prompts
 
-Use these prompts in **Codex** or **Claude Code** with local terminal access. Both hosts run the same Kanban Lite application. This guide starts the Release 1 browser board; it does not install an MCP server or host plugin. Claude/Codex plugin packages and automatic OpenSpec synchronization are planned releases.
+Use these prompts in **Codex** or **Claude Code** with local terminal access. Both hosts run the same Kanban Lite application. The browser prompts below start the standalone board. For real agent tools and the shared workflow skill, use the MCP/plugin setup prompt next. Automatic OpenSpec synchronization remains a later release; Claude installed-host acceptance remains pending on the development machine.
 
 The repository is private. Your local Git credentials must already have access. If cloning fails, authenticate with GitHub through your normal account flow; never paste tokens into a prompt.
 
-## Codex
+## MCP/plugin setup for either host
+
+Use this prompt in a local Codex or Claude Code session with terminal access:
+
+```text
+Set up Kanban Lite's implemented local MCP adapter for this host. Read applicable repository instructions, README.md, and docs/mcp-setup.md first. Preserve existing checkouts, board data, host configuration, and unrelated MCP entries.
+
+Install the optional adapter's locked dependencies and build it. Identify the running board's actual data directory and protocol. Reuse a compatible service; rebuild/restart only a service I own, preserving its directory. Do not start a second writer or stop another chat's process.
+
+Use this host's supported direct MCP setup with an absolute built entrypoint, --client codex or claude, and explicit --data-dir. If I ask for the plugin package instead, generate/validate it, install its runtime dependencies before host loading, and set the same nonsecret directory argument in both local MCP manifests before installation. Never put credentials into prompts or configurations. Do not register both routes.
+
+Verify discovery of all ten kanban_* tools and a real read-only list_projects call in the host. Start a new host session when reload is needed; do not equate configuration listing or an SDK handshake with actual host discovery. If tools cannot be used from the current session, report that limit and provide the exact next-session verification step. Do not claim success from a failed tool result. Do not claim automatic OpenSpec synchronization.
+```
+
+The direct MCP route supplies tools; the plugin route also supplies the `kanban-workflow` skill. Actual host discovery must be checked on your own installation.
+
+## Codex browser setup
 
 Open a local Codex chat in the parent directory where you want the checkout, then paste:
 
@@ -16,10 +32,10 @@ Set up https://github.com/alvintayzhenwei/kanban-lite as a lightweight localhost
 3. Run npm ci and npm run build in the checkout. Resolve setup failures without weakening checks or changing dependency versions merely to bypass an error.
 4. Check whether Kanban Lite already runs on 127.0.0.1:4317. Reuse a healthy running service; do not kill another process or start a second writer. For a fresh instance, run npm start -- --open in a persistent terminal. Keep the service bound to localhost. For an existing service, identify and preserve its actual data directory and report the matching restart command; do not assume it uses ~/.kanban-lite. For a new instance, use ~/.kanban-lite unless I specify another directory.
 5. Verify the board opens and is usable. Do not print, copy, or share the one-time session credential or private local credential. Report the plain URL, checkout path, data directory, and how to stop/restart the service. If browser access is unavailable, report the verification limit and provide the manual steps.
-6. Explain how I add repository roots with Add project, create a card, attach repository-relative spec/plan paths, and record verification evidence before Done. Do not invent MCP tools, install unimplemented host plugins, or claim automatic OpenSpec synchronization.
+6. Explain how I add repository roots with Add project, create a card, attach repository-relative spec/plan paths, and record verification evidence before Done. For real MCP/plugin setup, follow docs/mcp-setup.md separately. Do not claim automatic OpenSpec synchronization.
 ```
 
-## Claude Code
+## Claude Code browser setup
 
 Start Claude Code in the parent directory where you want the checkout, then paste:
 
@@ -31,7 +47,7 @@ Set up https://github.com/alvintayzhenwei/kanban-lite as a lightweight localhost
 3. Run npm ci and npm run build. Diagnose setup failures without disabling checks or casually changing dependency versions.
 4. Check for an existing Kanban Lite service on 127.0.0.1:4317. Reuse a healthy instance, identify its actual data directory, and preserve it in the restart command. Do not assume an existing service uses ~/.kanban-lite. Do not kill unrelated processes or start another writer. Otherwise start npm start -- --open in a persistent terminal, using the default ~/.kanban-lite data directory unless I specify another one. Keep the service localhost-only.
 5. Verify the browser board is usable. Keep session links and the private credential secret. Report only the plain board URL, checkout path, data directory, and stop/restart instructions. If you cannot inspect the browser, state that limitation and give manual verification steps.
-6. Guide me through Add project, a first card, repository-relative spec/plan links, and passing verification evidence before Done. This is the Release 1 browser board. Do not claim that Claude plugins, MCP tools, or automatic OpenSpec synchronization are already implemented.
+6. Guide me through Add project, a first card, repository-relative spec/plan links, and passing verification evidence before Done. This prompt sets up only the browser board. For the implemented MCP adapter/plugin packages, use docs/mcp-setup.md separately. Do not claim automatic OpenSpec synchronization.
 ```
 
 ## First project and SDLC workflow
