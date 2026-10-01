@@ -78,3 +78,42 @@ test("restore replaces stopped store with a verified backup", async (t) => {
     restored.close();
   }
 });
+
+test("restore rejects unreadable serialized card and evidence records", async (t) => {
+  const { store, dir, repo } = fixture(t);
+  const p = await registerProject(
+    store,
+    { name: "Keep original", root: repo() },
+    browser,
+  );
+  const c = createCard(
+    store,
+    { title: "Keep original", projectId: p.id },
+    0,
+    browser,
+  );
+  for (const [index, value] of [
+    "not json",
+    "null",
+    "{}",
+    JSON.stringify({ ...c, column: "Unknown" }),
+  ].entries()) {
+    const input = join(dir, `invalid-record-${index}.sqlite`);
+    await backupStore(store, input);
+    const broken = openStore(input);
+    broken.db.prepare("UPDATE cards SET data=? WHERE id=?").run(value, c.id);
+    broken.close();
+    const before = readFileSync(join(dir, "board.sqlite"));
+    await assert.rejects(restoreStore(dir, input), /record|backup|JSON/i);
+    assert.deepEqual(readFileSync(join(dir, "board.sqlite")), before);
+  }
+  const input = join(dir, "invalid-evidence.sqlite");
+  await backupStore(store, input);
+  const broken = openStore(input);
+  broken.db
+    .prepare("INSERT INTO evidence(card_id,data) VALUES(?,?)")
+    .run(c.id, "{}");
+  broken.close();
+  await assert.rejects(restoreStore(dir, input), /record|backup/i);
+  assert.equal(getCard(store, c.id).title, "Keep original");
+});

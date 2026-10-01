@@ -65,7 +65,7 @@ Stop the service before restoring:
 node dist/src/cli.js restore --input /path/to/backup.sqlite
 ```
 
-Restore validates schema and database integrity, preserves existing state in a `pre-restore-*.sqlite` backup, and replaces the database atomically. Do not copy the live database manually. Port conflicts and active writer locks produce diagnostics instead of starting another writer.
+Restore validates schema and database integrity, preserves existing state in a `pre-restore-*.sqlite` backup, and replaces the database atomically. Do not copy the live database manually. Port conflicts and active writer locks produce diagnostics instead of starting another writer. If an interrupted startup leaves `service.acquire`, ensure no Kanban startup or recovery process is running before removing that guard directory; automatic guard reclamation is deliberately avoided.
 
 ## Lightweight by design
 

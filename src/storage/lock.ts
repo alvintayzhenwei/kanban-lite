@@ -1,8 +1,10 @@
 import { mkdirSync, writeFileSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { randomUUID } from "node:crypto";
 export interface LockInfo {
   pid: number;
   url?: string;
+  token?: string;
 }
 export function isAlive(pid: number): boolean {
   try {
@@ -34,39 +36,59 @@ export function acquireLock(dataDir: string): {
 } {
   mkdirSync(dataDir, { recursive: true, mode: 0o700 });
   const path = join(dataDir, "service.lock");
+  const guard = join(dataDir, "service.acquire");
+  // Serialize both stale-lock reclamation and creation. An interrupted guard is
+  // left for explicit inspection rather than reclaimed with another unsafe race.
   try {
-    mkdirSync(path, { mode: 0o700 });
+    mkdirSync(guard, { mode: 0o700 });
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
-    const owner = readLock(dataDir);
-    if (!owner || isAlive(owner.pid))
-      throw new Error(
-        "Application is already running or the service lock is being initialized.",
-        { cause: error },
-      );
-    rmSync(path, { recursive: true });
-    mkdirSync(path, { mode: 0o700 });
+    throw new Error(
+      "Another startup or recovery is acquiring the service lock. Retry; inspect service.acquire if an earlier startup was interrupted.",
+      { cause: error },
+    );
   }
+  const token = randomUUID();
   const write = (url?: string) =>
     writeFileSync(
       join(path, "owner.json"),
-      JSON.stringify({ pid: process.pid, ...(url ? { url } : {}) }),
+      JSON.stringify({ pid: process.pid, token, ...(url ? { url } : {}) }),
       { mode: 0o600 },
     );
   try {
-    write();
-  } catch (error) {
-    rmSync(path, { recursive: true, force: true });
-    throw error;
+    try {
+      mkdirSync(path, { mode: 0o700 });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+      const owner = readLock(dataDir);
+      if (!owner || isAlive(owner.pid))
+        throw new Error(
+          "Application is already running or the service lock is being initialized.",
+          { cause: error },
+        );
+      rmSync(path, { recursive: true });
+      mkdirSync(path, { mode: 0o700 });
+    }
+    try {
+      write();
+    } catch (error) {
+      rmSync(path, { recursive: true, force: true });
+      throw error;
+    }
+  } finally {
+    rmSync(guard, { recursive: true, force: true });
   }
   let released = false;
+  const owns = () => readLock(dataDir)?.token === token;
   return {
     release() {
       if (!released) {
         released = true;
-        rmSync(path, { recursive: true, force: true });
+        if (owns()) rmSync(path, { recursive: true, force: true });
       }
     },
-    setUrl: write,
+    setUrl(url) {
+      if (!owns()) throw new Error("Service lock ownership changed.");
+      write(url);
+    },
   };
 }

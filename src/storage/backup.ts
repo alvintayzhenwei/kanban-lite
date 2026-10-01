@@ -5,6 +5,7 @@ import { resolve, join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { openStore, type Store } from "./database.js";
 import { acquireLock } from "./lock.js";
+import { validateRecords } from "./validate-records.js";
 export async function backupStore(
   store: Store,
   destination: string,
@@ -41,6 +42,7 @@ function validateBackup(path: string): void {
     db.prepare("SELECT id,entity_id,data FROM events LIMIT 1").all();
     if (db.prepare("PRAGMA foreign_key_check").all().length)
       throw new Error("Backup has invalid project or card references.");
+    validateRecords(db);
   } finally {
     db.close();
   }
