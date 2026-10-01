@@ -1,6 +1,9 @@
 import { createServer,type IncomingMessage,type ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync,readFileSync } from 'node:fs';
+import { timingSafeEqual } from 'node:crypto';
+import { join } from 'node:path';
+import { backupStore } from '../storage/backup.js';
 import type { Store } from '../storage/database.js';
 import type { Config } from '../config.js';
 import { createSessions,HttpError } from '../security/session.js';
@@ -30,6 +33,12 @@ export async function startServer(store:Store,config:Config):Promise<RunningServ
      const url=new URL(req.url??'/',origin);const method=req.method??'GET';
      if(method==='GET'&&url.pathname==='/health') return send(res,200,{name:'kanban-lite',version:'0.1.0',protocolVersion:1});
      if(method==='GET'&&files[url.pathname]) {const asset=files[url.pathname]!;const data=await readFile(new URL(asset.file,assets));res.writeHead(200,{'Content-Type':`${asset.type}; charset=utf-8`});res.end(data);return;}
+     if(url.pathname==='/ops/backup'&&method==='POST') {
+       const credential=readFileSync(join(config.dataDir,'credential'),'utf8');const provided=req.headers.authorization?.replace(/^Bearer /,'')??'';
+       if(req.headers.origin||provided.length!==credential.length||!timingSafeEqual(Buffer.from(provided),Buffer.from(credential)))throw new HttpError(403,'Invalid operational credential.');
+       const b=object(await jsonBody(req),['output']);if(typeof b.output!=='string'||!b.output||b.output.length>4096)throw new HttpError(400,'Invalid backup output path.');
+       await backupStore(store,b.output);return send(res,200,{saved:true});
+     }
      if(!url.pathname.startsWith('/api/')) throw new HttpError(404,'Not found.');
      const mutation=!['GET','HEAD'].includes(method);
      if((mutation||req.headers.origin)&&req.headers.origin!==origin) throw new HttpError(403,'Invalid Origin.');

@@ -6,6 +6,7 @@ export function errorResponse(error:unknown):{status:number;body:unknown} {
  if(error instanceof ValidationError) return {status:400,body:{error:error.message}};
  if(error instanceof NotFoundError) return {status:404,body:{error:error.message}};
  if(error instanceof PolicyError) return {status:422,body:{error:error.message}};
+ if(error instanceof Error&&'code' in error&&error.code==='EEXIST')return {status:409,body:{error:'Backup output already exists. Choose a new path.'}};
  if(error instanceof Error&&'code' in error&&['ENOENT','ENOTDIR'].includes(String(error.code))) return {status:400,body:{error:'Repository path does not exist.'}};
  return {status:500,body:{error:'Operation failed. No changes were saved.'}};
 }
