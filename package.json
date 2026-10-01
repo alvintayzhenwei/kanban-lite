@@ -23,9 +23,11 @@
     "test:browser": "npm run build --silent && playwright test",
     "check": "npm run lint && npm run typecheck && npm test",
     "start": "node dist/src/cli.js start",
-    "format": "prettier --write src tests public scripts *.json *.ts *.js .github README.md docs",
-    "format:check": "prettier --check src tests public scripts *.json *.ts *.js .github README.md docs",
-    "measure": "npm run build --silent && node scripts/measure.mjs"
+    "format": "prettier --write src adapters/mcp/src adapters/mcp/tests adapters/mcp/*.json tests public scripts *.json *.ts *.js .github README.md docs",
+    "format:check": "prettier --check src adapters/mcp/src adapters/mcp/tests adapters/mcp/*.json tests public scripts *.json *.ts *.js .github README.md docs",
+    "measure": "npm run build --silent && node scripts/measure.mjs",
+    "build:mcp": "npm run build --prefix adapters/mcp",
+    "check:mcp": "eslint adapters/mcp/src && npm run typecheck --prefix adapters/mcp && npm run build --silent && npm test --prefix adapters/mcp"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
