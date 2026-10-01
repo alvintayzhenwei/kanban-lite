@@ -12,6 +12,8 @@ import type { Store } from "../storage/database.js";
 import type { Config } from "../config.js";
 import { createSessions, HttpError } from "../security/session.js";
 import { object } from "../domain/validation.js";
+import { authenticateAgent } from "../security/agent.js";
+import { agentOperation } from "./agent.js";
 import { route } from "./routes.js";
 import { errorResponse } from "./errors.js";
 export interface RunningServer {
@@ -74,6 +76,7 @@ export async function startServer(
           name: "kanban-lite",
           version: "0.1.0",
           protocolVersion: 1,
+          agentProtocolVersion: 1,
         });
       if (method === "GET" && files[url.pathname]) {
         const asset = files[url.pathname]!;
@@ -81,6 +84,10 @@ export async function startServer(
         res.writeHead(200, { "Content-Type": `${asset.type}; charset=utf-8` });
         res.end(data);
         return;
+      }
+      if (url.pathname === "/agent/operation" && method === "POST") {
+        authenticateAgent(req, config.dataDir);
+        return send(res, 200, await agentOperation(store, await jsonBody(req)));
       }
       if (url.pathname === "/ops/backup" && method === "POST") {
         const credential = readFileSync(
@@ -119,7 +126,14 @@ export async function startServer(
         return send(res, 200, { csrf: session.csrf });
       const body =
         mutation && method !== "DELETE" ? await jsonBody(req) : undefined;
-      send(res, 200, await route(store, method, url, body));
+      send(
+        res,
+        200,
+        await route(store, method, url, body, {
+          client: "browser",
+          humanSession: true,
+        }),
+      );
     })().catch((error) => {
       if (res.headersSent) {
         res.destroy();

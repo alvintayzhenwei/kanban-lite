@@ -15,16 +15,21 @@ import {
 import { recordEvidence } from "../domain/evidence.js";
 import { listEvents } from "../domain/events.js";
 import { object, revision, text } from "../domain/validation.js";
-import type { Column, CardPatch, EvidenceInput } from "../domain/types.js";
+import type {
+  Actor,
+  Column,
+  CardPatch,
+  EvidenceInput,
+} from "../domain/types.js";
 import { HttpError } from "../security/session.js";
 export async function route(
   store: Store,
   method: string,
   url: URL,
   body: unknown,
+  actor: Actor,
 ): Promise<unknown> {
-  const path = url.pathname,
-    actor = { client: "browser" as const, humanSession: true };
+  const path = url.pathname;
   if (method === "GET" && path === "/api/projects") return listProjects(store);
   if (method === "GET" && path === "/api/cards")
     return listCards(store, url.searchParams.get("projectId") ?? undefined);
