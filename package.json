@@ -22,7 +22,10 @@
     "test": "npm run build --silent && node --test dist/tests/**/*.test.js",
     "test:browser": "npm run build --silent && playwright test",
     "check": "npm run lint && npm run typecheck && npm test",
-    "start": "node dist/src/cli.js start"
+    "start": "node dist/src/cli.js start",
+    "format": "prettier --write src tests public scripts *.json *.ts *.js .github README.md docs",
+    "format:check": "prettier --check src tests public scripts *.json *.ts *.js .github README.md docs",
+    "measure": "npm run build --silent && node scripts/measure.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -30,6 +33,7 @@
     "@types/node": "24.19.0",
     "eslint": "10.11.0",
     "globals": "17.13.0",
+    "prettier": "3.9.9",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.0"
   }
