@@ -10,7 +10,7 @@ A lightweight localhost Kanban board for development across multiple repositorie
 
 Release 1 provides a browser board with projects, priorities, owners, blockers, WIP warnings, artifact links, verification evidence, activity history, safe concurrent edits, and backups.
 
-Claude Code/Codex plugin packages and MCP tools arrive in Release 2. OpenSpec import and workflow integration arrive in Release 3. These integrations are designed, not yet implemented or verified. The complete product requires all three releases.
+Release 2 adds an optional shared stdio MCP adapter and generated Claude Code/Codex plugin packages. Actual Codex tool discovery and a read-only operation are verified locally; installed Claude Code acceptance remains pending because that host is unavailable here. OpenSpec import/reconciliation remains Release 3. See [MCP and plugin setup](docs/mcp-setup.md) and [Release 2 acceptance](docs/release-2-acceptance.md) for exact evidence and limits.
 
 ![Kanban Lite board with illustrative sample data](docs/assets/board-desktop.png)
 
@@ -39,6 +39,12 @@ npm start -- --open --port 4320 --data-dir /path/to/kanban-data
 ```
 
 Register repository roots with **Add project**, then create cards. Select one project or view all projects. Repository registration supports Git worktrees and paths containing spaces.
+
+## Agent tools and plugins
+
+Use the [MCP setup guide](docs/mcp-setup.md) to build the optional adapter and install either host package. Ten tools inspect projects/cards and record authorized card changes, blockers, artifacts, and actual verification evidence. Both adapters connect to the same explicit board service. The shared workflow skill preserves repository and installed workflow approval gates.
+
+For an existing service, rebuild and restart it before using the new agent endpoint. Plugin loading does not start the service. Use the same data directory for the browser and adapters.
 
 ## Track development without replacing it
 
@@ -73,7 +79,7 @@ Restore validates schema and database integrity, preserves existing state in a `
 
 ## Lightweight by design
 
-The running application has **zero third-party runtime dependencies**. SQLite and HTTP use Node's built-in APIs; the browser uses native modules and controls. Development dependencies provide compilation, linting, formatting, and browser tests and are not needed to run the built application. Node 24 SQLite API maturity may vary by patch; this project verifies the pinned patch.
+The running application has **zero third-party runtime dependencies**. SQLite and HTTP use Node's built-in APIs; the browser uses native modules and controls. The optional MCP adapter has separate locked SDK/schema dependencies; they are not required for the browser board. Development dependencies provide compilation, linting, formatting, and browser tests and are not needed to run the built application. Node 24 SQLite API maturity may vary by patch; this project verifies the pinned patch.
 
 Observed startup, memory, and package measurements are recorded in [Release 1 acceptance](docs/release-1-acceptance.md). These measurements characterize one machine, not universal performance guarantees.
 
@@ -86,7 +92,7 @@ npm run test:browser
 npm run format:check
 ```
 
-CI runs lint, type checks, tests/build, dependency audit, and Chromium acceptance on pull requests, main pushes, and feature-branch pushes. Actions are pinned to immutable commits. The README badge reflects the main-branch workflow; it does not claim unimplemented compatibility. On this private repository, badge/run access follows GitHub permissions.
+CI runs lint, type checks, tests/build, MCP contracts, generated-package installation checks, dependency audit, and Chromium acceptance on pull requests, main pushes, and feature-branch pushes. Actions are pinned to immutable commits. The README badge reflects the main-branch workflow; it does not claim unimplemented compatibility. On this private repository, badge/run access follows GitHub permissions.
 
 Dependabot checks npm and GitHub Actions weekly, Monday at 09:00 Asia/Singapore. Compatible development updates are grouped; major updates remain separate. There is no automatic merge. Vulnerability alerts and automated security updates are separate repository settings and were verified enabled during setup.
 

@@ -8,3 +8,6 @@ playwright-report/
 test-results/
 *.sqlite*
 *.db*
+adapters/mcp/node_modules/
+adapters/mcp/dist/
+artifacts/

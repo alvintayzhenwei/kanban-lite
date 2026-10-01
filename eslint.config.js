@@ -3,7 +3,16 @@ import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
 import globals from "globals";
 export default defineConfig(
-  { ignores: ["dist/**", "node_modules/**", ".superpowers/**"] },
+  {
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "adapters/mcp/dist/**",
+      "adapters/mcp/node_modules/**",
+      "artifacts/**",
+      ".superpowers/**",
+    ],
+  },
   {
     files: ["**/*.ts"],
     extends: [js.configs.recommended, tseslint.configs.recommended],
