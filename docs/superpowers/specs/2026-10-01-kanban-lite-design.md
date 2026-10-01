@@ -10,6 +10,14 @@ Create a lightweight localhost Kanban application and plugin for Claude Code and
 
 The user requested GitHub CI, Dependabot, and dynamic status badges in the README. The repository was empty when inspected. Multi-repository support is confirmed; the technical choices below are proposed defaults.
 
+## Three product acceptance criteria
+
+1. **Lite:** One local service, SQLite, and a framework-free browser interface. No Docker, external database, hosted service, or model API is required to use the board. Use built-in runtime capabilities where practical; justify each runtime dependency. Record cold startup time, idle resident memory, installed package size, and runtime dependency count on the acceptance machine. Report the measurements and machine/runtime context; these are characterization results, not invented performance guarantees. Keep idle operation event-driven, without background repository scanning or agent polling.
+2. **Claude Code and Codex:** Both hosts use the same engine, tool contracts, skills, and persistent board. Deliver separate validated installation packages without maintaining separate business logic. Release 2 must demonstrate actual tool discovery and shared-card read/update behavior in both hosts before claiming dual-host support. The foundation release alone does not satisfy this product criterion.
+3. **Agent Skills, Superpowers, and OpenSpec:** The plugin coordinates work and records artifacts; the installed workflow plugins govern how development is performed, and OpenSpec governs specification/task content. Support selecting Agent Skills, Superpowers, or both for each project without assuming their approvals or phases are identical. Follow repository instructions when workflows conflict; surface unresolved conflicts rather than inventing precedence. Release 3 must verify OpenSpec import/reconciliation and a representative workflow in each plugin mode, preserving approval gates and source files. Do not bundle or fork those plugins, overwrite their skills, or require all three tools merely to use the board.
+
+The complete product is accepted only when all three criteria pass. Phased releases remain useful milestones, not a claim that integration is complete.
+
 ## Architecture
 
 Use a TypeScript/Node.js application with a small browser interface, a local HTTP service, a SQLite store, and a stdio MCP adapter. Select and pin supported runtime and library versions during implementation planning after consulting their official or Context7 documentation. Avoid a frontend framework unless the interface requires one.
