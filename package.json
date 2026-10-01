@@ -18,7 +18,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src tests public scripts",
+    "lint": "eslint src tests public scripts --no-error-on-unmatched-pattern",
     "test": "npm run build --silent && node --test dist/tests/**/*.test.js",
     "test:browser": "npm run build --silent && playwright test",
     "check": "npm run lint && npm run typecheck && npm test",
