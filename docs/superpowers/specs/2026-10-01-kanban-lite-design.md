@@ -1,7 +1,7 @@
 # Kanban Lite design
 
 Date: 2026-10-01
-Status: Proposed for user review; implementation has not started.
+Status: Approved design. Release 1 implementation is verified; its draft PR awaits base-branch approval. Releases 2 and 3 remain planned.
 Repository: https://github.com/alvintayzhenwei/kanban-lite
 
 ## Purpose and agreed scope
