@@ -1,0 +1,36 @@
+{
+  "name": "kanban-lite",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A lightweight local Kanban board for shared agent workflows",
+  "engines": {
+    "node": ">=24.21.0 <25"
+  },
+  "bin": {
+    "kanban-lite": "dist/src/cli.js"
+  },
+  "files": [
+    "dist/src",
+    "public",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests public scripts",
+    "test": "npm run build --silent && node --test dist/tests/**/*.test.js",
+    "test:browser": "npm run build --silent && playwright test",
+    "check": "npm run lint && npm run typecheck && npm test",
+    "start": "node dist/src/cli.js start"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.6.3",
+    "eslint": "10.11.0",
+    "globals": "17.13.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0"
+  }
+}

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.*
+*.pem
+.superpowers/
+playwright-report/
+test-results/
+*.sqlite*
+*.db*
