@@ -6,7 +6,7 @@ Recorded on 2026-10-01. This evidence applies to the local foundation, not compl
 
 - 25 Node tests cover persistence, transactional migrations, repository isolation and path containment, revisions, atomic activity history, verification rules, authenticated HTTP, one-writer startup, restart, live backup, and stopped-service restore.
 - Four Chromium scenarios cover multi-project filtering, keyboard movement, owners/blockers/phase, WIP warnings, evidence and completion overrides, two-tab conflicts, stored HTML treated as text, and narrow-screen controls.
-- Lint, type checks, and compilation pass locally. A clean-install check and actual GitHub CI run are recorded below once completed.
+- Lint, type checks, and compilation pass locally. A separate clean checkout passed npm ci, all 25 Node tests, and all four Chromium scenarios. GitHub execution remains pending.
 - Desktop and narrow-screen screenshots were inspected for layout and usable controls. Preview data is illustrative, not a record of completed integrations.
 
 ![Desktop board with illustrative sample data](assets/board-desktop.png)
@@ -33,9 +33,9 @@ These are observations on one acceptance environment, not performance guarantees
 
 ## GitHub setup
 
-GitHub Actions is enabled. Vulnerability alerts and automated security updates were verified enabled; security updates are not paused. Dependabot version updates are configured weekly for npm and GitHub Actions, with compatible development updates grouped and no auto-merge. Main is the verified default branch.
+GitHub Actions is enabled. Vulnerability alerts and automated security updates were verified enabled; security updates are not paused. Dependabot version updates are configured weekly for npm and GitHub Actions, with compatible development updates grouped and no auto-merge. The repository was initially empty with main configured. GitHub made feature/kanban-foundation the default when the approved feature branch was published first. Design-only main initialization remains pending user approval.
 
-CI configuration covers lint, types, Node tests/build, dependency audit, and Chromium acceptance with immutable Action references. GitHub execution status will be updated after the draft PR runs. The main-branch README badge requires a main-branch run; a draft PR passing does not establish that result.
+CI configuration covers lint, types, Node tests/build, dependency audit, and Chromium acceptance with immutable Action references. GitHub execution status will be updated after the draft PR runs. The README badge follows the actual default branch; no main-branch result is claimed.
 
 ## Remaining product acceptance
 
