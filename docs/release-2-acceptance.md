@@ -49,4 +49,10 @@ Claude Code loader validation/discovery and a real host operation remain pending
 - Package generation refuses existing output, protecting personal configuration/dependencies; rebuilding requires a new output directory.
 - Keep existing source approval rules and defer OpenSpec synchronization; tracking capability does not implement Release 3.
 
-Independent-review outcomes and final clean-install/CI results are recorded below when verified.
+## Independent review and final verification
+
+One independent whole-branch review covered `3364cb7..15c9b92`. It found no Critical issues and two Important issues: recursive packaging admitted unintended files, and package tests overwrote fixed checkout paths. Both findings were accepted and fixed in one regression-backed pass. Packaging now copies an explicit source/build inventory and validation rejects all unexpected files/directories. Tests inject private notes, stale JavaScript, credentials, and state only into an owned temporary source fixture; source canaries survive packaging. The regression failed before the implementation fix and passed afterward.
+
+After this fix, all 30 application tests, eight adapter tests (including extracted-package installation), two package tests, lint, types, build, and formatting passed. Localhost tests required permitted networking after sandbox `listen EPERM`; they passed with that permission. A clean archive installation before the review fixes also passed the application, adapter, package, formatting, and audit checks. GitHub CI run [36892980125](https://github.com/alvintayzhenwei/kanban-lite/actions/runs/36892980125) passed all three jobs at `15c9b92`; the PR shows checks for subsequent commits.
+
+The reviewer declined to infer Claude loader acceptance, repeat actual personal Codex setup, rerun unchanged browser visuals, judge deferred OpenSpec synchronization, promise protection from malicious processes under the same OS user, or treat agent evidence/client attribution as proof of truth/human identity. These limits remain explicit. Four browser scenarios passed earlier; no browser assets changed in the review fix. No second independent review was performed after the targeted fix pass.

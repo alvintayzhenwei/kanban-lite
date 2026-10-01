@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, lstatSync, existsSync } from "node:fs";
 import { join, resolve, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
+import { pluginFiles } from "./plugin-files.mjs";
 import assert from "node:assert/strict";
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const require = createRequire(join(repo, "adapters/mcp/package.json"));
@@ -70,7 +71,9 @@ export function validatePlugin(root) {
     "utf8",
   );
   assert.match(skill, /^---\nname: kanban-workflow\ndescription: .+\n---/);
-  function walk(dir) {
+  const expected = new Set(pluginFiles(host));
+  const found = new Set();
+  function walk(dir, prefix = "") {
     for (const entry of readdirSync(dir)) {
       const path = join(dir, entry);
       const st = lstatSync(path);
@@ -82,10 +85,28 @@ export function validatePlugin(root) {
         false,
         "Package contains state or dependencies",
       );
-      if (st.isDirectory()) walk(path);
+      const relative = prefix + entry;
+      if (st.isDirectory()) {
+        assert.ok(
+          [...expected].some((file) => file.startsWith(relative + "/")),
+          "Unexpected package directory",
+        );
+        walk(path, relative + "/");
+      } else {
+        assert.ok(
+          st.isFile() && expected.has(relative),
+          `Unexpected package file: ${relative}`,
+        );
+        found.add(relative);
+      }
     }
   }
   walk(root);
+  assert.deepEqual(
+    [...found].sort(),
+    [...expected].sort(),
+    "Incomplete package inventory",
+  );
   return { name: manifest.name, version: manifest.version, host };
 }
 if (

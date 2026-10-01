@@ -1,7 +1,7 @@
 # Kanban Lite design
 
 Date: 2026-10-01
-Status: Approved design. Release 1 implementation is verified; draft PR #5 is open for review. Releases 2 and 3 remain planned.
+Status: Approved design. Release 1 is merged. Release 2 MCP implementation is verified locally and ready for review; actual Claude host acceptance remains pending. Release 3 remains planned.
 Repository: https://github.com/alvintayzhenwei/kanban-lite
 
 ## Purpose and agreed scope

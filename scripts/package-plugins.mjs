@@ -10,6 +10,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { parseArgs } from "node:util";
+import { adapterFiles } from "./plugin-files.mjs";
 import { validatePlugin } from "./validate-plugins.mjs";
 const repo = fileURLToPath(new URL("../", import.meta.url));
 function write(path, value) {
@@ -108,10 +109,12 @@ export function packagePlugins(
       },
     });
     mkdirSync(join(root, "adapter"));
-    for (const file of ["package.json", "package-lock.json", "tsconfig.json"])
+    for (const file of adapterFiles) {
+      mkdirSync(resolve(join(root, "adapter", file), ".."), {
+        recursive: true,
+      });
       copyTree(join(source, "adapters/mcp", file), join(root, "adapter", file));
-    for (const dir of ["src", "dist"])
-      copyTree(join(source, "adapters/mcp", dir), join(root, "adapter", dir));
+    }
     mkdirSync(join(root, "skills/kanban-workflow"), { recursive: true });
     copyTree(
       join(source, "plugins/shared/skills/kanban-workflow/SKILL.md"),
@@ -119,7 +122,7 @@ export function packagePlugins(
     );
     writeFileSync(
       join(root, "SETUP.md"),
-      "# Local setup\n\nUse Node 24.21.0 or a newer Node 24 patch. Before loading this plugin, run `npm ci --omit=dev --ignore-scripts --prefix adapter` from this directory. Start the separate Kanban Lite board explicitly. Both use `~/.kanban-lite` by default; set `KANBAN_DATA_DIR` in the adapter environment for a custom directory. No credential is included. Host loading does not install dependencies or start the board.\n\nSee the repository docs/mcp-setup.md for host install/removal and diagnostics.\n",
+      "# Local setup\n\nUse Node 24.21.0 or a newer Node 24 patch. Before loading this plugin, run `npm ci --omit=dev --ignore-scripts --prefix adapter` from this directory. Start the separate Kanban Lite board explicitly. Both use `~/.kanban-lite` by default; append `--data-dir /absolute/path` to the MCP server arguments for a custom directory. No credential is included. Host loading does not install dependencies or start the board.\n\nSee the repository docs/mcp-setup.md for host install/removal and diagnostics.\n",
     );
     validatePlugin(root);
     execFileSync("tar", [

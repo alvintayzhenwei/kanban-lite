@@ -1,6 +1,6 @@
 # Release 2 MCP and host packages implementation plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Let local Codex and Claude Code inspect and update the same Kanban board through real MCP tools, with shared workflow instructions and separately validated plugin packages.
 
@@ -35,11 +35,11 @@
 
 **Interfaces:** Generalize route(store, method, url, body, actor) with an explicit Actor; browser calls use {client:"browser",humanSession:true}. POST /agent/operation accepts {client:"claude"|"codex",operation:string,arguments:object}; authentication uses the existing local credential. Dispatch only an explicit allowlist into domain operations, with {humanSession:false}; never accept an arbitrary URL, HTTP method, actor object, or humanSession value. Responses use existing errorResponse status/body, including conflict current state. GET /health retains protocolVersion 1 and adds agentProtocolVersion 1.
 
-- [ ] Write failing endpoint tests: missing/wrong bearer rejected; any Origin header rejected; browser cookie alone rejected; malformed/oversized payload rejected; unknown fields/operations rejected; agent human override rejected; browser behavior unchanged.
-- [ ] Run focused HTTP tests and confirm missing functionality failures.
-- [ ] Implement constant-time credential validation using byte lengths and an explicit operation dispatcher. Keep Host checks and request limits. Expose list_projects, register_project, list_cards, get_card, create_card, update_card, move_card, record_evidence, list_events, and update_project. Reuse domain validation; do not expose delete, restore, backup, file reading, or synchronization tools.
-- [ ] Run HTTP/domain tests; demonstrate attribution and current passing evidence required for agent Done.
-- [ ] Commit the independently testable agent endpoint.
+- [x] Write failing endpoint tests: missing/wrong bearer rejected; any Origin header rejected; browser cookie alone rejected; malformed/oversized payload rejected; unknown fields/operations rejected; agent human override rejected; browser behavior unchanged.
+- [x] Run focused HTTP tests and confirm missing functionality failures.
+- [x] Implement constant-time credential validation using byte lengths and an explicit operation dispatcher. Keep Host checks and request limits. Expose list_projects, register_project, list_cards, get_card, create_card, update_card, move_card, record_evidence, list_events, and update_project. Reuse domain validation; do not expose delete, restore, backup, file reading, or synchronization tools.
+- [x] Run HTTP/domain tests; demonstrate attribution and current passing evidence required for agent Done.
+- [x] Commit the independently testable agent endpoint.
 
 ## Task 2: Optional stdio MCP adapter
 
@@ -49,12 +49,12 @@
 
 Tool names are prefixed kanban_: list_projects, register_project, list_cards, get_card, create_card, update_card, move_card, record_evidence, list_events, update_project. Inputs mirror domain types with bounded strings and strict object schemas. update_card takes {id,expectedRevision,patch}; evidence takes {id,expectedRevision,name,outcome,summary,sourceRevision?}; move takes {id,expectedRevision,column} with no override field. Results contain a JSON text block and structuredContent; tool failures have isError:true and {code,message,current?}. Tool descriptions state authorization and verification limits. Read-only tools have accurate readOnlyHint; mutation tools do not claim idempotence. No security decision depends on annotations.
 
-- [ ] Verify exact SDK/Zod releases and peer requirements against registry plus official docs; pin compatible versions in the optional package only.
-- [ ] Write failing client tests for missing service/credential, invalid/redirected URL, wrong protocol, timeout, conflict preservation, and secret-free diagnostics.
-- [ ] Implement the constrained HTTP client, explicit tool schemas, and official SDK stdio transport. Keep stdout exclusively protocol messages; diagnostics go to stderr. Handle stdin EOF and shutdown without stopping the board service.
-- [ ] Write/run SDK client handshake and tools/list/call tests against a temporary board: two independent stdio processes register one repository, create/read/update the same card, receive a stale-write conflict, record evidence, and move to Done. Malformed inputs and attempted override fail. Confirm persisted attribution is codex/claude respectively.
-- [ ] Run all adapter and existing application checks; record runtime dependency/installed-size changes separately for the optional adapter.
-- [ ] Commit the adapter and contract tests.
+- [x] Verify exact SDK/Zod releases and peer requirements against registry plus official docs; pin compatible versions in the optional package only.
+- [x] Write failing client tests for missing service/credential, invalid/redirected URL, wrong protocol, timeout, conflict preservation, and secret-free diagnostics.
+- [x] Implement the constrained HTTP client, explicit tool schemas, and official SDK stdio transport. Keep stdout exclusively protocol messages; diagnostics go to stderr. Handle stdin EOF and shutdown without stopping the board service.
+- [x] Write/run SDK client handshake and tools/list/call tests against a temporary board: two independent stdio processes register one repository, create/read/update the same card, receive a stale-write conflict, record evidence, and move to Done. Malformed inputs and attempted override fail. Confirm persisted attribution is codex/claude respectively.
+- [x] Run all adapter and existing application checks; record runtime dependency/installed-size changes separately for the optional adapter.
+- [x] Commit the adapter and contract tests.
 
 ## Task 3: Shared skill and generated host packages
 
@@ -64,22 +64,22 @@ Tool names are prefixed kanban_: list_projects, register_project, list_cards, ge
 
 Shared skill describes inspect/select/claim/update/block/artifact/evidence/review handoff using implemented tools. When proposals await approval, Proceed authorizes the offered card-entry action only; it does not bypass repository or workflow approvals. Criteria belong in descriptions until actual execution supplies evidence. Refresh on conflicts and compare before applying a new revision. Skills must not fork Agent Skills/Superpowers or claim automatic OpenSpec integration.
 
-- [ ] Read current host plugin format docs and installed CLI help. Record supported manifest fields and substitutions; use the target validator when available, otherwise record schema validation and its limits.
-- [ ] Write failing package tests for skill/manifests, built entrypoints, exact shared tool contracts, paths with spaces, missing build, secret/state exclusion, and normal package install/start from an extracted archive.
-- [ ] Implement deterministic generation/validation from shared sources and the skill; provide host-specific startup attribution.
-- [ ] Run package tests and SDK handshake against each generated package, including shared-card update/conflict acceptance. Do not equate these tests with installed-host discovery.
-- [ ] Commit sources and validation; do not commit generated node_modules, archives, or credentials.
+- [x] Read current host plugin format docs and installed CLI help. Record supported manifest fields and substitutions; use the target validator when available, otherwise record schema validation and its limits.
+- [x] Write failing package tests for skill/manifests, built entrypoints, exact shared tool contracts, paths with spaces, missing build, secret/state exclusion, and normal package install/start from an extracted archive.
+- [x] Implement deterministic generation/validation from shared sources and the skill; provide host-specific startup attribution.
+- [x] Run package tests and SDK handshake against each generated package, including shared-card update/conflict acceptance. Do not equate these tests with installed-host discovery.
+- [x] Commit sources and validation; do not commit generated node_modules, archives, or credentials.
 
 ## Task 4: Installation and real host acceptance
 
 **Files:** modify README.md, docs/setup-prompts.md, .github/workflows/ci.yml; create docs/mcp-setup.md and docs/release-2-acceptance.md.
 
-- [ ] Document explicit board start and adapter setup, custom data directories, direct MCP configuration, plugin install/reload/removal, runtime diagnostics, and optional dependency footprint. Replace browser-only instructions with tool instructions only after tools exist. Preserve browser fallback and Release 3 limitations.
-- [ ] Enable CI adapter contract/package tests with locked installation. Keep browser and existing application checks; add no paid model calls or fake compatibility badge.
-- [ ] Inspect existing host setup before installation. Install/configure locally through supported host flows without overwriting unrelated entries. Verify actual tool discovery and one harmless operation in available local Codex and Claude Code hosts. Claude executable was not found during planning; if unavailable, report that host acceptance as pending instead of claiming dual-host verification. Avoid installing a new host or purchasing access merely to clear the gate.
-- [ ] Run clean installation, full application/adapter/package checks and relevant browser scenarios; record exact commits, service config without credentials, measurements, host evidence, and remaining acceptance limits.
-- [ ] Obtain one independent whole-branch review, reproduce/fix meaningful findings, and rerun affected checks.
-- [ ] Publish a reviewable feature PR and attach it. No merge. Report all release limits and review decisions.
+- [x] Document explicit board start and adapter setup, custom data directories, direct MCP configuration, plugin install/reload/removal, runtime diagnostics, and optional dependency footprint. Replace browser-only instructions with tool instructions only after tools exist. Preserve browser fallback and Release 3 limitations.
+- [x] Enable CI adapter contract/package tests with locked installation. Keep browser and existing application checks; add no paid model calls or fake compatibility badge.
+- [x] Inspect existing host setup before installation. Install/configure locally through supported host flows without overwriting unrelated entries. Verify actual tool discovery and one harmless operation in available local Codex and Claude Code hosts. Claude executable was not found during planning; if unavailable, report that host acceptance as pending instead of claiming dual-host verification. Avoid installing a new host or purchasing access merely to clear the gate.
+- [x] Run clean installation, full application/adapter/package checks and relevant browser scenarios; record exact commits, service config without credentials, measurements, host evidence, and remaining acceptance limits.
+- [x] Obtain one independent whole-branch review, reproduce/fix meaningful findings, and rerun affected checks.
+- [x] Publish a reviewable feature PR and attach it. No merge. Report all release limits and review decisions.
 
 ## Documentation grounding and self-review
 
@@ -89,4 +89,4 @@ Coverage check: endpoint authentication/concurrency in Task 1; adapter diagnosti
 
 ## Execution handoff
 
-Recommended method: native execution in this chat, followed by one independent review. These tasks share the endpoint/tool contracts, so one implementer avoids repeated interface handoffs. This continues the execution method selected for Release 1. Implementation awaits review of this written Release 2 plan.
+Recommended method: native execution in this chat, followed by one independent review. These tasks share the endpoint/tool contracts, so one implementer avoids repeated interface handoffs. This continues the execution method selected for Release 1. The user approved this plan. Implementation and verification are complete; actual Claude host acceptance remains pending as permitted above. See docs/release-2-acceptance.md for evidence and review outcomes.
