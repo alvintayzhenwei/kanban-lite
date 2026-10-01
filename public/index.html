@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kanban Lite</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Kanban Lite home"
+        ><span class="brand-mark" aria-hidden="true">K</span>kanban<span
+          >lite</span
+        ></a
+      ><span class="local-label">LOCAL WORKSPACE</span
+      ><button id="refresh">Refresh</button>
+    </header>
+    <div class="workspace">
+      <aside>
+        <p class="eyebrow">WORKSPACE</p>
+        <h2>Your projects</h2>
+        <label class="sr-only" for="project-filter">Project filter</label
+        ><select id="project-filter">
+          <option value="">All projects</option>
+        </select>
+        <div id="project-list"></div>
+        <button id="add-project" class="wide">Add project</button>
+        <div class="sidebar-note">
+          <strong>Small board. Clear next step.</strong>
+          <p>Keep specs in your repositories. Track work and evidence here.</p>
+          <span class="version">Foundation · 0.1.0</span>
+        </div>
+      </aside>
+      <main>
+        <div class="board-header">
+          <div>
+            <p class="eyebrow">YOUR WORK, IN VIEW</p>
+            <h1 id="board-title">Project board</h1>
+            <p id="board-summary">Register a repository to begin.</p>
+          </div>
+          <div class="actions">
+            <button id="project-settings" disabled>Project settings</button
+            ><button id="new-card" class="primary" disabled>New card</button>
+          </div>
+        </div>
+        <p id="message" role="status" aria-live="polite"></p>
+        <div id="board" class="board"></div>
+        <p class="footnote">
+          Done means verified work. Approval and release acceptance stay in your
+          development workflow.
+        </p>
+      </main>
+    </div>
+    <dialog id="project-dialog">
+      <form id="project-form">
+        <div class="dialog-heading">
+          <h2 id="project-heading">Add project</h2>
+          <button
+            type="button"
+            data-close="project-dialog"
+            aria-label="Close project"
+          >
+            ×
+          </button>
+        </div>
+        <label
+          >Project name<input
+            id="project-name"
+            required
+            maxlength="200" /></label
+        ><label id="root-label"
+          >Repository path<input
+            id="project-root"
+            required
+            placeholder="/path/to/repository" /></label
+        ><label id="wip-label" hidden
+          >WIP limit<input
+            id="project-wip"
+            type="number"
+            min="1"
+            placeholder="No limit"
+        /></label>
+        <p id="project-error" role="alert"></p>
+        <button class="primary" id="project-submit">Register project</button>
+      </form>
+    </dialog>
+    <dialog id="create-dialog">
+      <form id="create-form">
+        <div class="dialog-heading">
+          <h2>New card</h2>
+          <button
+            type="button"
+            data-close="create-dialog"
+            aria-label="Close new card"
+          >
+            ×
+          </button>
+        </div>
+        <label>Project<select id="create-project"></select></label
+        ><label>Title<input id="create-title" required maxlength="200" /></label
+        ><label
+          >Description<textarea
+            id="create-description"
+            maxlength="20000"
+            rows="4"
+          ></textarea>
+        </label>
+        <p id="create-error" role="alert"></p>
+        <button class="primary">Create card</button>
+      </form>
+    </dialog>
+    <dialog id="card-dialog" class="card-dialog">
+      <div class="dialog-heading">
+        <div>
+          <p id="card-context" class="eyebrow"></p>
+          <h2>Card details</h2>
+        </div>
+        <button data-close="card-dialog" aria-label="Close card">×</button>
+      </div>
+      <p id="card-message" role="status" aria-live="polite"></p>
+      <button id="reload-card" hidden>Reload card</button>
+      <form id="card-form">
+        <label>Title<input id="card-title" required maxlength="200" /></label
+        ><label
+          >Description<textarea
+            id="card-description"
+            maxlength="20000"
+            rows="3"
+          ></textarea>
+        </label>
+        <div class="form-grid">
+          <label
+            >Priority<select id="card-priority" aria-label="Priority">
+              <option>low</option>
+              <option>normal</option>
+              <option>high</option>
+              <option>urgent</option>
+            </select></label
+          ><label
+            >Phase<select id="card-phase" aria-label="Phase">
+              <option>Discovery</option>
+              <option>Design</option>
+              <option>Planning</option>
+              <option>Implementation</option>
+              <option>Review</option>
+              <option>Verification</option>
+            </select></label
+          >
+        </div>
+        <div class="form-grid">
+          <label
+            >Owner<input
+              id="card-owner"
+              maxlength="200"
+              placeholder="Unassigned" /></label
+          ><label
+            >Blocker reason<input
+              id="card-blocker"
+              maxlength="2000"
+              placeholder="No blocker"
+          /></label>
+        </div>
+        <label
+          >Artifact links
+          <span class="hint">One repository-relative path | label per line</span
+          ><textarea id="card-artifacts" rows="2"></textarea></label
+        ><button class="primary">Save changes</button>
+      </form>
+      <section class="detail-section">
+        <h3>Move work</h3>
+        <div class="actions">
+          <label class="grow"
+            >Move to<select id="move-column">
+              <option>Backlog</option>
+              <option>Ready</option>
+              <option>In Progress</option>
+              <option>Review</option>
+              <option>Done</option>
+            </select></label
+          ><button id="move-card">Move card</button>
+        </div>
+        <button id="override-toggle" class="text-button">
+          Completion override
+        </button>
+        <div id="override-panel" hidden>
+          <p>
+            Use an explicit reason when accepting work without passing
+            verification evidence.
+          </p>
+          <label
+            >Override reason<textarea
+              id="override-reason"
+              maxlength="2000"
+              rows="2"
+            ></textarea></label
+          ><button id="override-confirm" disabled>Confirm override</button>
+        </div>
+      </section>
+      <section class="detail-section">
+        <h3>Verification evidence</h3>
+        <p id="verification-status"></p>
+        <form id="evidence-form">
+          <div class="form-grid">
+            <label
+              >Check name<input
+                id="check-name"
+                required
+                maxlength="200" /></label
+            ><label
+              >Outcome<select id="check-outcome">
+                <option value="passed">passed</option>
+                <option value="failed">failed</option>
+              </select></label
+            >
+          </div>
+          <label
+            >Evidence summary<textarea
+              id="check-summary"
+              required
+              maxlength="4000"
+              rows="2"
+            ></textarea></label
+          ><label
+            >Source revision<input
+              id="check-revision"
+              maxlength="200"
+              placeholder="Optional commit or revision" /></label
+          ><button>Record evidence</button>
+        </form>
+        <ul id="evidence-list" class="history"></ul>
+      </section>
+      <section class="detail-section">
+        <h3>Activity</h3>
+        <ul id="event-list" class="history"></ul>
+      </section>
+      <button id="delete-card" class="danger">Delete card</button>
+    </dialog>
+  </body>
+</html>

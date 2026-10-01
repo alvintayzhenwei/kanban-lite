@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Singapore
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "@types/node"
+        versions: [">=25"]
+    groups:
+      development-minor-patch:
+        dependency-type: development
+        patterns: ["*"]
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Singapore
+    open-pull-requests-limit: 5
