@@ -1,5 +1,6 @@
 import { createServer,type IncomingMessage,type ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import type { Store } from '../storage/database.js';
 import type { Config } from '../config.js';
 import { createSessions,HttpError } from '../security/session.js';
@@ -14,6 +15,8 @@ async function jsonBody(req:IncomingMessage):Promise<unknown> {
  try {return JSON.parse(Buffer.concat(chunks).toString('utf8'));} catch {throw new HttpError(400,'Invalid JSON.');}
 }
 function send(res:ServerResponse,status:number,body:unknown):void {res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(body));}
+const sourceAssets=new URL('../../public/',import.meta.url);
+const assets=existsSync(sourceAssets)?sourceAssets:new URL('../../../public/',import.meta.url);
 const files:Record<string,{file:string;type:string}>={
  '/':{file:'index.html',type:'text/html'},'/app.js':{file:'app.js',type:'text/javascript'},'/api.js':{file:'api.js',type:'text/javascript'},'/styles.css':{file:'styles.css',type:'text/css'}
 };
@@ -26,7 +29,7 @@ export async function startServer(store:Store,config:Config):Promise<RunningServ
      if(req.headers.host!==new URL(origin).host) throw new HttpError(403,'Invalid Host.');
      const url=new URL(req.url??'/',origin);const method=req.method??'GET';
      if(method==='GET'&&url.pathname==='/health') return send(res,200,{name:'kanban-lite',version:'0.1.0',protocolVersion:1});
-     if(method==='GET'&&files[url.pathname]) {const asset=files[url.pathname]!;const data=await readFile(new URL(`../../../public/${asset.file}`,import.meta.url));res.writeHead(200,{'Content-Type':`${asset.type}; charset=utf-8`});res.end(data);return;}
+     if(method==='GET'&&files[url.pathname]) {const asset=files[url.pathname]!;const data=await readFile(new URL(asset.file,assets));res.writeHead(200,{'Content-Type':`${asset.type}; charset=utf-8`});res.end(data);return;}
      if(!url.pathname.startsWith('/api/')) throw new HttpError(404,'Not found.');
      const mutation=!['GET','HEAD'].includes(method);
      if((mutation||req.headers.origin)&&req.headers.origin!==origin) throw new HttpError(403,'Invalid Origin.');
