@@ -1,6 +1,6 @@
 # Kanban Lite
 
-[![CI](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/ci.yml)
+[![CI](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/ci.yml/badge.svg?branch=feature%2Fkanban-foundation)](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/ci.yml)
 
 A lightweight localhost Kanban board for development across multiple repositories.
 
@@ -82,7 +82,7 @@ npm run test:browser
 npm run format:check
 ```
 
-CI runs lint, type checks, tests/build, dependency audit, and Chromium acceptance on pull requests, main pushes, and feature-branch pushes. Actions are pinned to immutable commits. The README badge reflects the actual default-branch workflow; it does not claim unimplemented compatibility. On this private repository, badge/run access follows GitHub permissions.
+CI runs lint, type checks, tests/build, dependency audit, and Chromium acceptance on pull requests, main pushes, and feature-branch pushes. Actions are pinned to immutable commits. The README badge reflects the foundation feature-branch workflow until the draft PR is merged; it does not claim unimplemented compatibility. On this private repository, badge/run access follows GitHub permissions.
 
 Dependabot checks npm and GitHub Actions weekly, Monday at 09:00 Asia/Singapore. Compatible development updates are grouped; major updates remain separate. There is no automatic merge. Vulnerability alerts and automated security updates are separate repository settings and were verified enabled during setup.
 
