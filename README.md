@@ -1,6 +1,6 @@
 # Kanban Lite
 
-[![CI](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/ci.yml/badge.svg?branch=feature%2Fkanban-foundation)](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/ci.yml)
+[![CI](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/ci.yml)
 
 A lightweight localhost Kanban board for development across multiple repositories.
 
@@ -13,6 +13,10 @@ Release 1 provides a browser board with projects, priorities, owners, blockers, 
 Claude Code/Codex plugin packages and MCP tools arrive in Release 2. OpenSpec import and workflow integration arrive in Release 3. These integrations are designed, not yet implemented or verified. The complete product requires all three releases.
 
 ![Kanban Lite board with illustrative sample data](docs/assets/board-desktop.png)
+
+## Copy-paste setup with Codex or Claude
+
+Use the [setup prompts](docs/setup-prompts.md) to install, start, and verify the local board with either assistant. The guide also covers manual tracking alongside Agent Skills, Superpowers, and OpenSpec.
 
 ## Start locally
 
@@ -82,7 +86,7 @@ npm run test:browser
 npm run format:check
 ```
 
-CI runs lint, type checks, tests/build, dependency audit, and Chromium acceptance on pull requests, main pushes, and feature-branch pushes. Actions are pinned to immutable commits. The README badge reflects the foundation feature-branch workflow until the draft PR is merged; it does not claim unimplemented compatibility. On this private repository, badge/run access follows GitHub permissions.
+CI runs lint, type checks, tests/build, dependency audit, and Chromium acceptance on pull requests, main pushes, and feature-branch pushes. Actions are pinned to immutable commits. The README badge reflects the main-branch workflow; it does not claim unimplemented compatibility. On this private repository, badge/run access follows GitHub permissions.
 
 Dependabot checks npm and GitHub Actions weekly, Monday at 09:00 Asia/Singapore. Compatible development updates are grouped; major updates remain separate. There is no automatic merge. Vulnerability alerts and automated security updates are separate repository settings and were verified enabled during setup.
 
