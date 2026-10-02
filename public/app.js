@@ -45,11 +45,11 @@ function safely(fn, target = "message") {
   };
 }
 async function refresh() {
-  const selected = $("project-filter").value;
   [projects, cards] = await Promise.all([
     request("/api/projects"),
     request("/api/cards"),
   ]);
+  const selected = $("project-filter").value;
   $("project-filter").replaceChildren(
     option("", "All projects"),
     ...projects.map((p) => option(p.id, p.name)),

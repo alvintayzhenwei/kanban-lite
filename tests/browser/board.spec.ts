@@ -40,8 +40,37 @@ test("projects filter and keyboard controls manage workflow", async ({
   await project(page, "Alpha");
   await card(page, "Build local board");
   await project(page, "Beta");
+  await expect(page.locator("#board-title")).toHaveText("Beta");
+  let releaseRefresh!: () => void;
+  let refreshStarted!: () => void;
+  const heldRefresh = new Promise<void>((resolve) => {
+    releaseRefresh = resolve;
+  });
+  const started = new Promise<void>((resolve) => {
+    refreshStarted = resolve;
+  });
+  await page.route("**/api/cards", async (route) => {
+    if (route.request().method() === "GET") {
+      refreshStarted();
+      await heldRefresh;
+    }
+    await route.continue();
+  });
   await card(page, "Beta task");
+  await started;
   await page.getByLabel("Project filter").selectOption({ label: "Alpha" });
+  const previousOption = await page
+    .locator("#project-filter option")
+    .first()
+    .elementHandle();
+  releaseRefresh();
+  await expect
+    .poll(() => previousOption!.evaluate((option) => option.isConnected))
+    .toBe(false);
+  await expect(
+    page.getByRole("button", { name: "Beta task", exact: true }),
+  ).toHaveCount(0);
+  await expect(page.locator("#board-title")).toHaveText("Alpha");
   await expect(
     page.getByRole("button", { name: "Beta task", exact: true }),
   ).toHaveCount(0);
