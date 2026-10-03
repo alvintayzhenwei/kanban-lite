@@ -1,7 +1,6 @@
 {
-  "name": "kanban-lite",
+  "name": "@alvintayzhenwei/kanban-lite",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "description": "A lightweight local Kanban board for shared agent workflows",
   "engines": {
@@ -13,7 +12,9 @@
   "files": [
     "dist/src",
     "public",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "SECURITY.md"
   ],
   "scripts": {
     "build": "tsc",
@@ -23,13 +24,15 @@
     "test:browser": "npm run build --silent && playwright test",
     "check": "npm run lint && npm run typecheck && npm test",
     "start": "node dist/src/cli.js start",
-    "format": "prettier --write src adapters/mcp/src adapters/mcp/tests adapters/mcp/*.json tests public scripts *.json *.ts *.js .github README.md docs plugins/shared",
-    "format:check": "prettier --check src adapters/mcp/src adapters/mcp/tests adapters/mcp/*.json tests public scripts *.json *.ts *.js .github README.md docs plugins/shared",
+    "format": "prettier --write src adapters/mcp/src adapters/mcp/tests adapters/mcp/*.json tests public scripts *.json *.ts *.js .github README.md SECURITY.md docs plugins/shared",
+    "format:check": "prettier --check src adapters/mcp/src adapters/mcp/tests adapters/mcp/*.json tests public scripts *.json *.ts *.js .github README.md SECURITY.md docs plugins/shared",
     "measure": "npm run build --silent && node scripts/measure.mjs",
     "build:mcp": "npm run build --prefix adapters/mcp",
     "check:mcp": "eslint adapters/mcp/src && npm run typecheck --prefix adapters/mcp && npm run build --silent && npm test --prefix adapters/mcp",
     "package:plugins": "npm run build:mcp && node scripts/package-plugins.mjs",
-    "test:plugins": "npm run build --silent && node --test dist/tests/plugins/*.test.js"
+    "test:plugins": "npm run build --silent && node --test dist/tests/plugins/*.test.js",
+    "prepack": "npm run build",
+    "test:package": "node scripts/verify-npm-package.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -40,5 +43,19 @@
     "prettier": "3.9.9",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.0"
+  },
+  "license": "MIT",
+  "author": "Alvin Tay Zhenwei",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alvintayzhenwei/kanban-lite.git"
+  },
+  "homepage": "https://github.com/alvintayzhenwei/kanban-lite#readme",
+  "bugs": {
+    "url": "https://github.com/alvintayzhenwei/kanban-lite/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

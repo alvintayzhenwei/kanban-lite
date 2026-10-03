@@ -1,0 +1,62 @@
+name: Publish npm
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'alvintayzhenwei/kanban-lite'
+    runs-on: ubuntu-latest
+    environment: npm
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate stable release tag and main ancestry
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const { name, version } = JSON.parse(readFileSync('package.json', 'utf8'));
+          assert.equal(name, '@alvintayzhenwei/kanban-lite');
+          assert.match(version, /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
+          assert.equal(process.env.RELEASE_TAG, `v${version}`);
+          JS
+          git merge-base --is-ancestor HEAD origin/main
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version-file: .node-version
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Check npm supports trusted publishing
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          const [major, minor, patch] = execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim().split('.').map(Number);
+          assert(major > 11 || (major === 11 && (minor > 5 || (minor === 5 && patch >= 1))), 'Trusted publishing requires npm >=11.5.1');
+          JS
+      - run: npm ci
+      - run: npm ci --ignore-scripts --prefix adapters/mcp
+      - run: npm run check
+      - run: npm run check:mcp
+      - run: npm run test:plugins
+      - run: npm run format:check
+      - run: npm audit --audit-level=high
+      - run: npm audit --audit-level=high --prefix adapters/mcp
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - run: npm run test:package
+      - name: Publish with npm trusted publishing
+        run: npm publish --access public --provenance
