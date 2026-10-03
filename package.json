@@ -1,6 +1,6 @@
 {
   "name": "@alvintayzhenwei/kanban-lite",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "A lightweight local Kanban board for shared agent workflows",
   "engines": {

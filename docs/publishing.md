@@ -1,6 +1,8 @@
 # Publishing Kanban Lite
 
-The repository prepares `@alvintayzhenwei/kanban-lite` for public npm releases. The unscoped `kanban-lite` name belongs to another project. Confirm that your npm account owns the `alvintayzhenwei` scope before publishing; GitHub ownership does not grant npm ownership. A registry lookup returning 404 does not reserve a name.
+The repository publishes `@alvintayzhenwei/kanban-lite` under the npm organization `alvintayzhenwei`, owned by the npm account `alvintay1987`. The unscoped `kanban-lite` name belongs to another project. GitHub ownership does not grant npm ownership.
+
+Version `0.1.0` was published locally to bootstrap the package. The trusted publisher is configured for this repository's `publish.yml` workflow and `npm` environment. GitHub secret scanning, push protection, private vulnerability reporting, and dependency alerts are enabled. The `npm` environment accepts only `v*` tags. A successful automated release must still be verified from its workflow result and npm provenance.
 
 The CLI remains `kanban-lite`. The npm package includes compiled application code, browser assets, README, license, security policy, and package metadata. The optional MCP adapter stays private and is distributed separately through the plugin packaging workflow.
 
@@ -68,6 +70,8 @@ On a development branch, update `package.json` and `package-lock.json` together 
 ```sh
 npm version patch --no-git-tag-version
 ```
+
+Version increments are intentional and reviewed, not automatic on every main push. Use `patch` for fixes, `minor` for compatible features, and `major` for breaking changes. The README badge follows npm's latest published version; `/health` reads the installed package version. Neither needs a separate version edit.
 
 Review and merge the version change into `main`; confirm CI and Security results for that commit. From the clean, up-to-date `main` checkout, create and push the matching tag. For example, after a `0.1.0` bootstrap and a bump to `0.1.1`:
 

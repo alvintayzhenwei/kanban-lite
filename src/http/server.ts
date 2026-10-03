@@ -46,6 +46,9 @@ const sourceAssets = new URL("../../public/", import.meta.url);
 const assets = existsSync(sourceAssets)
   ? sourceAssets
   : new URL("../../../public/", import.meta.url);
+const { version } = JSON.parse(
+  readFileSync(new URL("../package.json", assets), "utf8"),
+) as { version: string };
 const files: Record<string, { file: string; type: string }> = {
   "/": { file: "index.html", type: "text/html" },
   "/app.js": { file: "app.js", type: "text/javascript" },
@@ -74,7 +77,7 @@ export async function startServer(
       if (method === "GET" && url.pathname === "/health")
         return send(res, 200, {
           name: "kanban-lite",
-          version: "0.1.0",
+          version,
           protocolVersion: 1,
           agentProtocolVersion: 1,
         });
