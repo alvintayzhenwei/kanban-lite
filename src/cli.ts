@@ -2,7 +2,7 @@
 import { parseArgs } from "node:util";
 import { fileURLToPath } from "node:url";
 import { resolve, join } from "node:path";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, realpathSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { loadConfig, type Config } from "./config.js";
 import { openStore } from "./storage/database.js";
@@ -141,7 +141,8 @@ export async function run(args = process.argv.slice(2)): Promise<void> {
 }
 if (
   process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+  realpathSync(resolve(process.argv[1])) ===
+    realpathSync(fileURLToPath(import.meta.url))
 )
   void run().catch((error) => {
     console.error(error instanceof Error ? error.message : "Operation failed.");
