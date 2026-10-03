@@ -1,5 +1,7 @@
 # Kanban Lite
 
+[![npm version](https://img.shields.io/npm/v/%40alvintayzhenwei%2Fkanban-lite)](https://www.npmjs.com/package/@alvintayzhenwei/kanban-lite)
+
 [![CI](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/ci.yml)
 
 [![Security checks](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/security.yml/badge.svg?branch=main)](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/security.yml)
@@ -25,7 +27,7 @@ Use the [setup prompts](https://github.com/alvintayzhenwei/kanban-lite/blob/main
 
 ## Run with npm / npx
 
-The prepared package name is `@alvintayzhenwei/kanban-lite`; the unscoped `kanban-lite` package is a different project. These commands require the first public npm release. Until then, use the source setup below.
+Published on npm as `@alvintayzhenwei/kanban-lite`; the unscoped `kanban-lite` package is a different project. The version badge above shows the latest published release.
 
 Use Node.js **24.21.0 or a newer Node 24 patch** (Node 25+ is not supported).
 
@@ -87,7 +89,7 @@ Both tabs editing the same item receive revision conflicts instead of silently o
 
 Default state lives in `~/.kanban-lite/`, outside repositories and plugin caches. The directory contains `board.sqlite`, a private local credential, and an active service lock. Do not commit or share the credential or session links.
 
-After npm publication, create a backup while the service runs or while it is stopped. For source installs, replace the `npx` package invocation with `node dist/src/cli.js`:
+Create a backup while the service runs or while it is stopped. For source installs, replace the `npx` package invocation with `node dist/src/cli.js`:
 
 ```sh
 npx --yes @alvintayzhenwei/kanban-lite backup --output /path/to/new-backup.sqlite

@@ -52,6 +52,9 @@ try {
     dataDir: join(temporary, "data"),
   });
   try {
+    const health = await fetch(`${app.url}/health`);
+    assert.equal(health.status, 200);
+    assert.equal((await health.json()).version, manifest.version);
     for (const path of ["/health", "/", "/app.js", "/styles.css"]) {
       const response = await fetch(`${app.url}${path}`);
       assert.equal(response.status, 200, path);
