@@ -16,13 +16,18 @@ try {
   const files = packed.files.map((file) => file.path);
   for (const file of files) {
     assert(
-      /^(dist\/src\/.*\.js|public\/[^/]+|package\.json|README\.md|LICENSE|SECURITY\.md)$/.test(
+      /^(dist\/src\/.*\.js|public\/[^/]+|package\.json|README\.md|CHANGELOG\.md|LICENSE|SECURITY\.md)$/.test(
         file,
       ),
       `Unexpected package file: ${file}`,
     );
   }
-  for (const required of ["dist/src/cli.js", "public/index.html", "LICENSE"])
+  for (const required of [
+    "dist/src/cli.js",
+    "public/index.html",
+    "LICENSE",
+    "CHANGELOG.md",
+  ])
     assert(files.includes(required), `Missing package file: ${required}`);
   execFileSync(
     "npm",
@@ -43,8 +48,9 @@ try {
     { encoding: "utf8" },
   );
   assert(help.includes("kanban-lite start"));
+  assert(help.includes("kanban-lite open"));
   const installed = resolve(temporary, "node_modules", manifest.name);
-  const { startApplication } = await import(
+  const { startApplication, requestBrowserLogin } = await import(
     pathToFileURL(join(installed, "dist/src/cli.js"))
   );
   const app = await startApplication({
@@ -55,6 +61,22 @@ try {
     const health = await fetch(`${app.url}/health`);
     assert.equal(health.status, 200);
     assert.equal((await health.json()).version, manifest.version);
+    const loginUrl = await requestBrowserLogin(join(temporary, "data"));
+    const login = await fetch(`${app.url}/api/session`, {
+      method: "POST",
+      headers: { Origin: app.url, "Content-Type": "application/json" },
+      body: JSON.stringify({ token: new URL(loginUrl).hash.slice(1) }),
+    });
+    assert.equal(login.status, 200);
+    const cookie = login.headers.get("set-cookie").split(";")[0];
+    assert.equal(
+      (
+        await fetch(`${app.url}/api/projects`, {
+          headers: { Cookie: cookie },
+        })
+      ).status,
+      200,
+    );
     for (const path of ["/health", "/", "/app.js", "/styles.css"]) {
       const response = await fetch(`${app.url}${path}`);
       assert.equal(response.status, 200, path);
