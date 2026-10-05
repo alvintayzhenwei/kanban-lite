@@ -36,7 +36,14 @@ export async function startApplication(config: Config): Promise<RunningServer> {
     throw error;
   }
 }
-export function openBrowser(url: string): void {
+export async function openBrowser(
+  url: string,
+  browser?: string,
+): Promise<void> {
+  if (browser && process.platform !== "darwin")
+    throw new Error(
+      "--browser is supported on macOS. Otherwise use your default browser.",
+    );
   const command =
     process.platform === "darwin"
       ? "open"
@@ -44,14 +51,63 @@ export function openBrowser(url: string): void {
         ? "rundll32"
         : "xdg-open";
   const args =
-    process.platform === "win32" ? ["url.dll,FileProtocolHandler", url] : [url];
-  const child = spawn(command, args, { stdio: "ignore", detached: true });
-  child.on("error", () =>
-    console.error(
-      "Browser could not open. Restart with --open after checking your default browser.",
-    ),
+    process.platform === "win32"
+      ? ["url.dll,FileProtocolHandler", url]
+      : browser
+        ? ["-a", browser, url]
+        : [url];
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(command, args, { stdio: "ignore" });
+    const failed = () =>
+      reject(
+        new Error(
+          "Browser could not open. Check your browser, then retry the open command.",
+        ),
+      );
+    child.once("error", failed);
+    child.once("exit", (code) => (code === 0 ? resolve() : failed()));
+  });
+}
+export async function requestBrowserLogin(dataDir: string): Promise<string> {
+  const owner = readLock(dataDir);
+  if (!owner || !isAlive(owner.pid) || !owner.url)
+    throw new Error(
+      "Start Kanban Lite with --open and the same --data-dir first.",
+    );
+  const origin = new URL(owner.url);
+  if (
+    !/^http:\/\/127\.0\.0\.1:\d+$/.test(owner.url) ||
+    origin.origin !== owner.url
+  )
+    throw new Error("Invalid service URL. Check the service lock.");
+  let response: Response;
+  try {
+    response = await fetch(`${owner.url}/ops/session`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${readFileSync(join(dataDir, "credential"), "utf8")}`,
+        "Content-Type": "application/json",
+      },
+      body: "{}",
+      redirect: "error",
+      signal: AbortSignal.timeout(5000),
+    });
+    const result = (await response.json()) as { url?: unknown };
+    if (
+      response.ok &&
+      typeof result.url === "string" &&
+      result.url.startsWith(`${owner.url}/?login#`) &&
+      /^[a-f0-9]{64}$/.test(result.url.slice(`${owner.url}/?login#`.length))
+    )
+      return result.url;
+  } catch {
+    throw new Error(
+      "Browser login request failed. Check the running service and --data-dir.",
+    );
+  }
+  throw new Error(
+    `Browser login request failed (HTTP ${response.status}). Check --data-dir; older services need one restart after rebuilding.`,
   );
-  child.unref();
 }
 export async function run(args = process.argv.slice(2)): Promise<void> {
   const { values, positionals } = parseArgs({
@@ -61,6 +117,7 @@ export async function run(args = process.argv.slice(2)): Promise<void> {
       port: { type: "string" },
       "data-dir": { type: "string" },
       open: { type: "boolean" },
+      browser: { type: "string" },
       output: { type: "string" },
       input: { type: "string" },
       help: { type: "boolean" },
@@ -68,7 +125,7 @@ export async function run(args = process.argv.slice(2)): Promise<void> {
   });
   if (values.help || !positionals.length) {
     console.log(
-      "kanban-lite start [--open] [--port N] [--data-dir PATH]\nkanban-lite backup --output PATH [--data-dir PATH]\nkanban-lite restore --input PATH [--data-dir PATH]",
+      "kanban-lite start [--open] [--browser APP] [--port N] [--data-dir PATH]\nkanban-lite open [--browser APP] [--data-dir PATH]\nkanban-lite backup --output PATH [--data-dir PATH]\nkanban-lite restore --input PATH [--data-dir PATH]",
     );
     return;
   }
@@ -79,12 +136,34 @@ export async function run(args = process.argv.slice(2)): Promise<void> {
     ...(values.port ? { KANBAN_PORT: values.port } : {}),
   });
   const command = positionals[0];
+  if (values.browser && process.platform !== "darwin")
+    throw new Error(
+      "--browser is supported on macOS. Otherwise use your default browser.",
+    );
+  if (command === "open") {
+    await openBrowser(
+      await requestBrowserLogin(config.dataDir),
+      values.browser,
+    );
+    console.log(
+      "Opened an authenticated browser session. Existing sessions remain active.",
+    );
+    return;
+  }
   if (command === "start") {
     const app = await startApplication(config);
     console.log(
       `Kanban Lite is running at ${app.url}\nData: ${config.dataDir}\n${values.open ? "Opening an authenticated browser session." : "Use --open to launch an authenticated browser session."}`,
     );
-    if (values.open) openBrowser(app.bootstrapUrl);
+    if (values.open) {
+      try {
+        await openBrowser(app.bootstrapUrl, values.browser);
+      } catch (error) {
+        console.error(
+          error instanceof Error ? error.message : "Browser could not open.",
+        );
+      }
+    }
     const shutdown = () => {
       void app.close().then(
         () => process.exit(0),

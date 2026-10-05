@@ -22,6 +22,13 @@ function message(error, target = "message") {
   if (error.status === 409 && target === "card-message")
     $("reload-card").hidden = false;
 }
+function loginRequired(error) {
+  $("workspace").hidden = true;
+  $("login-panel").hidden = false;
+  $("login-error").textContent = error.message;
+  for (const dialog of document.querySelectorAll("dialog[open]"))
+    dialog.close();
+}
 function safely(fn, target = "message") {
   return async (event) => {
     event?.preventDefault();
@@ -37,7 +44,8 @@ function safely(fn, target = "message") {
     try {
       await fn(event);
     } catch (error) {
-      message(error, target);
+      if (error.status === 401) loginRequired(error);
+      else message(error, target);
     } finally {
       for (const [b, disabled] of controls) b.disabled = disabled;
       pending = false;
@@ -371,12 +379,17 @@ $("delete-card").onclick = safely(async () => {
   $("card-dialog").close();
   await refresh();
 }, "card-message");
-try {
-  await authenticate();
-  await refresh();
-} catch (error) {
-  document.body.classList.add("locked");
-  message({
-    message: `${error.message} Restart the local app with --open to create a new session.`,
-  });
+async function load() {
+  try {
+    await authenticate();
+    await refresh();
+    $("login-panel").hidden = true;
+    $("workspace").hidden = false;
+    $("message").textContent = "";
+  } catch (error) {
+    if (error.status === 401) loginRequired(error);
+    else message(error);
+  }
 }
+$("retry-login").onclick = load;
+await load();
