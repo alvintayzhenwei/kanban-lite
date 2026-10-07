@@ -95,11 +95,14 @@ try {
         },
       });
       await page.goto(await requestBrowserLogin(join(temporary, "data")));
-      await page.getByText("Passkeys", { exact: true }).click();
+      await page.locator("#passkey-onboarding").waitFor({ state: "visible" });
       await page
         .getByRole("button", { name: "Create passkey", exact: true })
         .click();
-      await page.getByText("Passkey created.", { exact: true }).waitFor();
+      await page
+        .locator("#passkey-message")
+        .filter({ hasText: "Passkey created." })
+        .waitFor();
       await context.clearCookies();
       await page.reload();
       await page
