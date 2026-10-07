@@ -142,7 +142,7 @@ test("two tabs surface conflicts and preserve edits", async ({
   await project(page, "Alpha");
   await card(page, "Shared card");
   const second = await context.newPage();
-  await second.goto(server.url);
+  await second.goto(server.url.replace("127.0.0.1", "localhost"));
   await open(page, "Shared card");
   await open(second, "Shared card");
   await page
@@ -188,9 +188,13 @@ test("logged-out browsers get login guidance instead of an empty board", async (
     const page = await context.newPage();
     await page.goto(server.url);
     await expect(
-      page.getByRole("heading", { name: "Browser login required" }),
+      page.getByRole("heading", { name: "Sign in to Kanban Lite" }),
     ).toBeVisible();
-    await expect(page.getByText(/kanban-lite open/)).toBeVisible();
+    await expect(
+      page
+        .locator("#login-panel")
+        .getByText("kanban-lite open", { exact: true }),
+    ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Add project", exact: true }),
     ).toBeHidden();
@@ -199,7 +203,7 @@ test("logged-out browsers get login guidance instead of an empty board", async (
     ).toBeHidden();
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(
-      page.getByRole("heading", { name: "Browser login required" }),
+      page.getByRole("heading", { name: "Sign in to Kanban Lite" }),
     ).toBeVisible();
   } finally {
     await context.close();
@@ -213,7 +217,7 @@ test("session loss during refresh displays login guidance", async ({
   await context.clearCookies();
   await page.getByRole("button", { name: "Refresh", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Browser login required" }),
+    page.getByRole("heading", { name: "Sign in to Kanban Lite" }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Add project", exact: true }),
