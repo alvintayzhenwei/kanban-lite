@@ -2,7 +2,11 @@
 
 The repository publishes `@alvintayzhenwei/kanban-lite` under the npm organization `alvintayzhenwei`, owned by the npm account `alvintay1987`. The unscoped `kanban-lite` name belongs to another project. GitHub ownership does not grant npm ownership.
 
-Version `0.1.0` was published locally to bootstrap the package. The trusted publisher is configured for this repository's `publish.yml` workflow and `npm` environment. GitHub secret scanning, push protection, private vulnerability reporting, and dependency alerts are enabled. The `npm` environment accepts only `v*` tags. A successful automated release must still be verified from its workflow result and npm provenance.
+The registry currently reports `0.1.1` (verified 2026-10-07). This branch prepares
+`0.3.0` with passkeys, logout, and guided onboarding; preparation is not publication.
+The workflow uses the GitHub `npm` environment and OIDC. Confirm the package's
+trusted-publisher settings in npm before releasing; repository files alone do
+not prove that external settings are configured.
 
 The CLI remains `kanban-lite`. The npm package includes compiled application code, browser assets, README, license, security policy, and package metadata. The optional MCP adapter stays private and is distributed separately through the plugin packaging workflow.
 
@@ -73,20 +77,47 @@ npm version patch --no-git-tag-version
 
 Version increments are intentional and reviewed, not automatic on every main push. Use `patch` for fixes, `minor` for compatible features, and `major` for breaking changes. The README badge follows npm's latest published version; `/health` reads the installed package version. Neither needs a separate version edit.
 
-Review and merge the version change into `main`; confirm CI and Security results for that commit. From the clean, up-to-date `main` checkout, create and push the matching tag. For example, after a `0.1.0` bootstrap and a bump to `0.1.1`:
+Review and merge the version change into `main`; confirm CI and Security results for that commit. From the clean, up-to-date `main` checkout, create and push the matching tag. For this release candidate, after its reviewed merge:
 
 ```sh
-git tag -a v0.1.1 -m "Release 0.1.1"
-git push origin v0.1.1
+git tag -a v0.3.0 -m "Release 0.3.0"
+git push origin v0.3.0
 ```
 
 Pushing a `v*` tag starts `publish.yml`. The job rejects prerelease tags, mismatched versions, and commits outside `main` history, runs all checks and the installed-package smoke test, then publishes with provenance. Wait for the actual workflow result and verify the registry version before announcing the release:
 
 ```sh
 npm view @alvintayzhenwei/kanban-lite version dist.attestations
-npx --yes @alvintayzhenwei/kanban-lite@0.1.1 --help
+npx --yes @alvintayzhenwei/kanban-lite@0.3.0 --help
 ```
 
 A source change, passing local tests, or GitHub tag does not establish successful npm publication. If authentication fails, check the scope, trusted publisher fields, direct-publish permission, environment, and workflow filename. Never reuse an already published version.
 
 See npm's [trusted publishing documentation](https://docs.npmjs.com/trusted-publishers/) and [scoped package publishing guide](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/) for current account setup requirements.
+
+## Validate without publishing
+
+After this preparation merges into `main`, use Actions → Publish npm → Run
+workflow on `main`. A manual run executes version/main-ancestry validation,
+all checks, the installed-package smoke test, and `npm pack --dry-run`. It
+skips `npm publish`. A passing manual run is release readiness evidence, not a
+published version. Tag pushes still publish only when `vX.Y.Z` matches the
+package version and the tagged commit belongs to main history.
+
+## 0.3.0 release checklist
+
+- Review the [changelog](../CHANGELOG.md) and [browser guide](getting-started/browser-login.md).
+- Verify real Chrome/macOS enrollment and returning sign-in with Touch ID/PIN;
+  virtual-authenticator tests do not establish real-device acceptance.
+- Back up the existing board before schema-2 migration. Restoring a backup also
+  restores public passkey credentials and their access trust. Old binaries
+  require a pre-upgrade backup to roll back.
+- Merge reviewed preparation, verify CI and Security, then run the manual
+  publication-free workflow on the exact main commit.
+- Confirm npm trusted publisher fields: `alvintayzhenwei/kanban-lite`,
+  workflow `publish.yml`, environment `npm`, direct publish allowed.
+- Obtain release approval before pushing `v0.3.0`. Verify the Publish npm run,
+  registry version, provenance, and installed CLI before announcing publication.
+
+The npm tarball includes the user guides and README images. Historical design
+and acceptance records remain in the GitHub repository.

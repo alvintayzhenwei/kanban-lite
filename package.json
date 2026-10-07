@@ -1,6 +1,6 @@
 {
   "name": "@alvintayzhenwei/kanban-lite",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "A lightweight local Kanban board for shared agent workflows",
   "engines": {
@@ -15,7 +15,14 @@
     "README.md",
     "CHANGELOG.md",
     "LICENSE",
-    "SECURITY.md"
+    "SECURITY.md",
+    "docs/README.md",
+    "docs/getting-started",
+    "docs/guides",
+    "docs/publishing.md",
+    "docs/mcp-setup.md",
+    "docs/setup-prompts.md",
+    "docs/assets"
   ],
   "scripts": {
     "build": "tsc",

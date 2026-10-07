@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join, resolve, posix } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const temporary = mkdtempSync(join(tmpdir(), "kanban-lite-package-"));
@@ -17,7 +17,7 @@ try {
   const files = packed.files.map((file) => file.path);
   for (const file of files) {
     assert(
-      /^(dist\/src\/.*\.js|public\/[^/]+|package\.json|README\.md|CHANGELOG\.md|LICENSE|SECURITY\.md)$/.test(
+      /^(dist\/src\/.*\.js|public\/[^/]+|docs\/(?:README\.md|publishing\.md|mcp-setup\.md|setup-prompts\.md|(?:getting-started|guides)\/[^/]+\.md|assets\/[^/]+\.png)|package\.json|README\.md|CHANGELOG\.md|LICENSE|SECURITY\.md)$/.test(
         file,
       ),
       `Unexpected package file: ${file}`,
@@ -28,8 +28,25 @@ try {
     "public/index.html",
     "LICENSE",
     "CHANGELOG.md",
+    "docs/README.md",
+    "docs/getting-started/browser-login.md",
+    "docs/guides/auto-start.md",
+    "docs/assets/onboarding-desktop.png",
   ])
     assert(files.includes(required), `Missing package file: ${required}`);
+  for (const file of files.filter((name) => name.endsWith(".md"))) {
+    const markdown = readFileSync(file, "utf8");
+    for (const [, target] of markdown.matchAll(/\]\(([^)\s]+)\)/g)) {
+      if (/^(?:https?:|#)/.test(target)) continue;
+      const linkedFile = posix.normalize(
+        posix.join(posix.dirname(file), target.split("#")[0]),
+      );
+      assert(
+        files.includes(linkedFile),
+        `Missing packaged documentation link: ${file} → ${target}`,
+      );
+    }
+  }
   execFileSync(
     "npm",
     [
