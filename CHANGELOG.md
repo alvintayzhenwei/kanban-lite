@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Fixed
+
+- Plugin packaging derives its version from the bundled MCP adapter instead of a stale constant; adapter and host manifests now report 0.3.0.
+
+
 ## 0.3.0
 
 ### Added

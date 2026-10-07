@@ -5,6 +5,7 @@ import {
   writeFileSync,
   readdirSync,
   lstatSync,
+  readFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -35,7 +36,9 @@ export function packagePlugins(
   output = resolve(output);
   if (!existsSync(join(source, "adapters/mcp/dist/stdio.js")))
     throw new Error("Build the adapter before packaging: npm run build:mcp");
-  const version = "0.2.0";
+  const { version } = JSON.parse(
+    readFileSync(join(source, "adapters/mcp/package.json"), "utf8"),
+  );
   const description =
     "Local Kanban tools and workflow guidance for repository development.";
   for (const host of ["codex", "claude"])

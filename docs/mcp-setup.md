@@ -143,3 +143,21 @@ browsers, or lost keys, run `kanban-lite open --data-dir /path/to/your/kanban-da
 Use the exact data directory already configured for the established service.
 Do not start another writer. See [browser login](getting-started/browser-login.md) for key removal,
 fresh verification, and backup recovery trust.
+
+## Plugin upgrades
+
+Plugin manifests and the bundled adapter use the adapter package version; the
+0.3.0 plugin accompanies board 0.3.0. Rebuild and generate a fresh package,
+preserve the existing `--data-dir` in both MCP manifests, install its locked
+dependencies, and remove/re-add the plugin through Codex. Use one MCP
+registration route per host. Start a new Codex session to load the updated
+server and skill. A successful plugin install does not update a running board
+service or automatically reconcile task cards. Browser changes from other
+clients appear when you choose **Refresh**.
+
+If another Codex chat still fails after an upgrade, start a fresh chat/session
+or restart Codex to reload MCP configuration. Existing sessions can retain old
+server processes and discovery. Confirm the installed manifest uses the same
+absolute data directory as the board, then test a read-only project listing.
+Do not interpret tool discovery alone as a successful connection; retain the
+exact error code if a fresh-session request fails.
