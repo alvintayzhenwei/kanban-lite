@@ -168,8 +168,11 @@ In the authenticated board, expand **Passkeys**, choose **Create passkey**, and
 approve with your device's credential manager, Touch ID, or PIN.
 
 The logged-out page separates returning **Sign in with passkey** from
-**First-time setup**. Expand setup, copy the command, replace the data directory,
-and run it in Terminal. **Check connection** checks this browser’s session; if
+**First-time setup**. Expand setup and choose **Copy setup prompt**. Paste it into Codex on the
+board host; the prompt asks Codex to verify the existing service, data directory,
+and installed CLI before opening a trusted browser session. No manual path
+editing is needed. Codex must leave passkey creation and Touch ID/PIN approval
+to you. **Check connection** checks this browser’s session; if
 the command opens another browser, continue there. After trusted login, the
 board offers **Create passkey** prominently. You can choose **Do this later**
 and keep using the board. Successful enrollment confirms your board is ready.

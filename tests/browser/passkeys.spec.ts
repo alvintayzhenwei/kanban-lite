@@ -170,8 +170,12 @@ test("unsupported browsers keep CLI recovery visible without exposing board data
     ).toBeVisible();
     await expect(page.locator("#workspace")).toBeHidden();
     await page.getByText("First-time setup", { exact: true }).click();
-    await expect(page.locator("#setup-command")).toContainText(
-      "kanban-lite open --data-dir",
+    await expect(
+      page.getByRole("button", { name: "Copy setup prompt", exact: true }),
+    ).toBeVisible();
+    await page.getByText("View setup prompt", { exact: true }).click();
+    await expect(page.locator("#setup-prompt")).toContainText(
+      "exact data directory",
     );
     await expect(
       page.getByRole("button", { name: "Check connection", exact: true }),

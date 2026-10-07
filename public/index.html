@@ -33,20 +33,22 @@
       <details id="first-time-setup">
         <summary>First-time setup</summary>
         <h2>Open your private project board</h2>
+        <p>Step 1 of 2: let Codex open a trusted browser session.</p>
         <p>
-          Step 1 of 2: open a trusted browser session on the computer running
-          the board.
+          Copy this prompt into Codex on the computer running your board. Codex
+          will find the existing data directory, so you do not need to edit a
+          path.
         </p>
-        <pre><code id="setup-command">kanban-lite open --data-dir /path/to/your/kanban-data</code></pre>
-        <p>
-          Replace the path with the data directory configured in your MCP
-          adapter or shown in the service terminal.
-        </p>
-        <button id="copy-setup-command">Copy command</button>
+        <details>
+          <summary>View setup prompt</summary>
+          <pre id="setup-prompt">
+Help me set up browser login for this existing Kanban Lite board. Inspect the running Kanban Lite service and local MCP configuration to identify its exact data directory and installed CLI. Reuse the existing service and data directory; do not create another database, start a second writer, or restart a healthy service. Use the CLI open command with that verified data directory to open an authenticated session in my browser. If the service is stopped, confirm the established configuration before starting it. Do not print credentials or login tokens. Once the board opens, guide me to Passkeys → Create passkey. Leave credential-manager selection, Touch ID/PIN approval, and passkey creation to me. If the correct service or directory is ambiguous, ask me instead of guessing.</pre>
+        </details>
+        <button id="copy-setup-prompt">Copy setup prompt</button>
         <p id="setup-message" role="status" aria-live="polite"></p>
         <p>
-          Run it in Terminal. It opens your browser without restarting the
-          board. Then choose Create passkey in the board that opens.
+          After Codex opens the board, choose Create passkey and approve it
+          yourself. Continue in the browser that opens.
         </p>
         <button id="retry-login">Check connection</button>
       </details>

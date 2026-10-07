@@ -474,8 +474,8 @@ $("skip-passkey").onclick = () => {
   $("passkey-onboarding").hidden = true;
   $("passkey-settings").open = false;
 };
-$("copy-setup-command").onclick = safely(async () => {
-  await navigator.clipboard.writeText($("setup-command").textContent);
+$("copy-setup-prompt").onclick = safely(async () => {
+  await navigator.clipboard.writeText($("setup-prompt").textContent);
   $("setup-message").textContent =
-    "Copied. Replace the data directory before running in Terminal.";
+    "Copied. Paste this prompt into Codex on the computer running your board.";
 }, "setup-message");
