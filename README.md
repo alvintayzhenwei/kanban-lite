@@ -1,6 +1,7 @@
 # Kanban Lite
 
-[![npm version](https://img.shields.io/npm/v/%40alvintayzhenwei%2Fkanban-lite)](https://www.npmjs.com/package/@alvintayzhenwei/kanban-lite)
+[![npm published version](https://img.shields.io/npm/v/%40alvintayzhenwei%2Fkanban-lite?label=npm%20published)](https://www.npmjs.com/package/@alvintayzhenwei/kanban-lite)
+[![Source version](https://img.shields.io/github/package-json/v/alvintayzhenwei/kanban-lite?label=source%20version)](https://github.com/alvintayzhenwei/kanban-lite/blob/main/package.json)
 [![CI](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/ci.yml)
 [![Security checks](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/security.yml/badge.svg?branch=main)](https://github.com/alvintayzhenwei/kanban-lite/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/alvintayzhenwei/kanban-lite/blob/main/LICENSE)
@@ -41,7 +42,7 @@ npm start -- --open
 
 ## Release status
 
-The npm version badge reports the latest published package. The `0.3.0` release candidate adds passkeys, guided onboarding, browser logout, and macOS auto-start guidance; these features remain unavailable from npm until publication. The `kanban-lite open` browser login command arrived in `0.2.0`. Automated Chromium results do not establish real macOS Touch ID/PIN or Codex embedded-browser acceptance.
+The **npm published** badge reports the registry version; **source version** reads `main/package.json` and does not establish publication. CI and Security badges show main-branch workflow status. The `0.3.0` release candidate adds passkeys, guided onboarding, browser logout, and macOS auto-start guidance; these features remain unavailable from npm until publication. The `kanban-lite open` browser login command arrived in `0.2.0`. Automated Chromium results do not establish real macOS Touch ID/PIN or Codex embedded-browser acceptance.
 
 ## License
 
