@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 0.3.0 — release candidate
+## 0.3.0
 
 ### Added
 

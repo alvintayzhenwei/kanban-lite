@@ -2,8 +2,8 @@
 
 The repository publishes `@alvintayzhenwei/kanban-lite` under the npm organization `alvintayzhenwei`, owned by the npm account `alvintay1987`. The unscoped `kanban-lite` name belongs to another project. GitHub ownership does not grant npm ownership.
 
-The registry currently reports `0.1.1` (verified 2026-10-07). This branch prepares
-`0.3.0` with passkeys, logout, and guided onboarding; preparation is not publication.
+Version `0.3.0` is published on npm (verified 2026-10-08), with provenance
+metadata. It includes passkeys, logout, and guided onboarding.
 The workflow uses the GitHub `npm` environment and OIDC. Confirm the package's
 trusted-publisher settings in npm before releasing; repository files alone do
 not prove that external settings are configured.
@@ -77,7 +77,8 @@ npm version patch --no-git-tag-version
 
 Version increments are intentional and reviewed, not automatic on every main push. Use `patch` for fixes, `minor` for compatible features, and `major` for breaking changes. The README badge follows npm's latest published version; `/health` reads the installed package version. Neither needs a separate version edit.
 
-Review and merge the version change into `main`; confirm CI and Security results for that commit. From the clean, up-to-date `main` checkout, create and push the matching tag. For this release candidate, after its reviewed merge:
+Review and merge the version change into `main`; confirm CI and Security results for that commit. From the clean, up-to-date `main` checkout, create and push the matching tag. The completed `0.3.0` release used the following commands. For a future release,
+substitute a new reviewed version; do not recreate or move an existing tag:
 
 ```sh
 git tag -a v0.3.0 -m "Release 0.3.0"
@@ -97,14 +98,14 @@ See npm's [trusted publishing documentation](https://docs.npmjs.com/trusted-publ
 
 ## Validate without publishing
 
-After this preparation merges into `main`, use Actions → Publish npm → Run
+Use Actions → Publish npm → Run
 workflow on `main`. A manual run executes version/main-ancestry validation,
 all checks, the installed-package smoke test, and `npm pack --dry-run`. It
 skips `npm publish`. A passing manual run is release readiness evidence, not a
 published version. Tag pushes still publish only when `vX.Y.Z` matches the
 package version and the tagged commit belongs to main history.
 
-## 0.3.0 release checklist
+## Future release checklist
 
 - Review the [changelog](../CHANGELOG.md) and [browser guide](getting-started/browser-login.md).
 - Verify real Chrome/macOS enrollment and returning sign-in with Touch ID/PIN;
@@ -116,7 +117,7 @@ package version and the tagged commit belongs to main history.
   publication-free workflow on the exact main commit.
 - Confirm npm trusted publisher fields: `alvintayzhenwei/kanban-lite`,
   workflow `publish.yml`, environment `npm`, direct publish allowed.
-- Obtain release approval before pushing `v0.3.0`. Verify the Publish npm run,
+- Obtain release approval before pushing the new matching version tag. Verify the Publish npm run,
   registry version, provenance, and installed CLI before announcing publication.
 
 The npm tarball includes the user guides and README images. Historical design

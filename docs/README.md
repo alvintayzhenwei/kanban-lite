@@ -16,3 +16,5 @@
 ## Release
 
 - [Publishing](publishing.md).
+
+[Back to Kanban Lite](../README.md)

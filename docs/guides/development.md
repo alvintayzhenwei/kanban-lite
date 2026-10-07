@@ -24,3 +24,5 @@ SQLite and HTTP use Node's built-in APIs. Passkey ceremonies use pinned SimpleWe
 3. **Workflow integration:** read-only OpenSpec import/reconciliation and project workflow modes for Agent Skills, Superpowers, or both. Preserve source authority and approval gates.
 
 See the [design](https://github.com/alvintayzhenwei/kanban-lite/blob/main/docs/superpowers/specs/2026-10-01-kanban-lite-design.md) and [Release 1 plan](https://github.com/alvintayzhenwei/kanban-lite/blob/main/docs/superpowers/plans/2026-10-01-release-1.md).
+
+[Back to Kanban Lite](../../README.md)
