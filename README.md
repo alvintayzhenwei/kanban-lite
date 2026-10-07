@@ -58,7 +58,7 @@ npm start -- --open
 
 The service binds to `127.0.0.1:4317`. `--open` opens your default browser with a one-time session link, then removes the credential from the address bar. The terminal prints a plain URL without credentials. Login links expire after five minutes; browser sessions last eight hours. Tabs in the same browser share a session; Chrome and Codex's browser need separate logins. Stop the service with Ctrl+C.
 
-Open the board through the running service at `http://127.0.0.1:4317/`. Do not open `public/index.html` as a `file://` page: the application needs the service's API and browser session.
+Open the board through the running service at `http://localhost:4317/`. Do not open `public/index.html` as a `file://` page: the application needs the service's API and browser session.
 
 ### Browser login
 
@@ -78,7 +78,7 @@ The command opens a fresh authenticated session in your default browser without 
 node dist/src/cli.js open --browser "Google Chrome" --data-dir /path/to/your/kanban-data
 ```
 
-Opening the plain localhost URL does not sign you in. An unauthenticated browser displays **Browser login required** with instructions, rather than an empty project board. MCP access does not authenticate the browser. After upgrading an older service, rebuild and restart it once to enable the new `open` command; subsequent browser logins need no restart.
+Opening the plain localhost URL does not sign you in. An unauthenticated browser displays **Sign in to Kanban Lite** with instructions, rather than an empty project board. MCP access does not authenticate the browser. After upgrading an older service, rebuild and restart it once to enable the new `open` command; subsequent browser logins need no restart.
 
 To use another port or data directory:
 
@@ -191,3 +191,136 @@ Automated Chromium checks use virtual authenticators. Real macOS Touch ID/PIN
 and Codex embedded-browser acceptance must be verified separately before
 claiming support on those devices. This is local browser login, not remote
 access or an additional human-approval gate for MCP actions.
+
+## Log out and test returning login
+
+Click **Log out** in the header. This revokes this browser's server session,
+clears its cookie, and shows the sign-in screen. Tabs sharing that session lose
+access on their next API request. Other browser sessions and enrolled passkeys
+are unchanged. A service restart ends all browser sessions but preserves keys.
+
+To test: create a passkey once, click **Log out**, refresh to confirm the board
+stays private, then click **Sign in with passkey** and approve with Touch ID or
+PIN. The board should return without a terminal command. If you have not enrolled
+a key, use `kanban-lite open --data-dir /path/to/your/kanban-data` for initial
+setup. Clicking logout never deletes projects or cards.
+
+## Auto-start on macOS
+
+A foreground terminal service ends when its process stops. For a board that
+starts when you sign in to macOS and restarts after a crash, use a per-user
+LaunchAgent. It runs while that macOS user is logged in, not before login.
+
+First build a stable checkout (`npm ci && npm run build`). From that checkout,
+run this setup after stopping the foreground board you own with Ctrl+C. If an
+existing LaunchAgent already runs the board, update that agent instead; never
+start two writers for the same data directory. Keep the exact existing data
+path used by your MCP adapter. The example uses the default `~/.kanban-lite`:
+
+```sh
+python3 <<'PY'
+from pathlib import Path
+import os, plistlib, shutil, subprocess
+
+repo = Path.cwd().resolve()
+data = (Path.home() / '.kanban-lite').resolve()  # Replace with your existing data directory.
+node = shutil.which('node')
+entry = repo / 'dist/src/cli.js'
+if not node or not entry.is_file():
+    raise SystemExit('Install supported Node.js and build this checkout first.')
+agent = Path.home() / 'Library/LaunchAgents/com.alvintay.kanban-lite.plist'
+if agent.exists():
+    raise SystemExit('An agent already exists. Inspect and update it; do not overwrite it.')
+logs = Path.home() / 'Library/Logs/KanbanLite'
+logs.mkdir(parents=True, exist_ok=True)
+agent.parent.mkdir(parents=True, exist_ok=True)
+config = {
+    'Label': 'com.alvintay.kanban-lite',
+    'ProgramArguments': [str(Path(node).resolve()), str(entry), 'start', '--data-dir', str(data)],
+    'WorkingDirectory': str(repo),
+    'RunAtLoad': True,
+    'KeepAlive': True,
+    'ThrottleInterval': 10,
+    'Umask': 0o077,
+    'StandardOutPath': str(logs / 'stdout.log'),
+    'StandardErrorPath': str(logs / 'stderr.log'),
+}
+with agent.open('xb') as out:
+    plistlib.dump(config, out)
+subprocess.run(['launchctl', 'bootstrap', f'gui/{os.getuid()}', str(agent)], check=True)
+print('Open http://localhost:4317/; use CLI login once to enroll a passkey.')
+PY
+```
+
+Use an absolute Node path and a checkout/install location you will keep. If the
+Node installation moves or you remove that checkout, update the agent first.
+For the default port, verify `curl --fail http://localhost:4317/health`. Logs are
+in `~/Library/Logs/KanbanLite/`; do not share login links or credentials from
+other files. Restarting does not sign you in automatically.
+
+Inspect or stop this exact agent:
+
+```sh
+launchctl print "gui/$(id -u)/com.alvintay.kanban-lite"
+launchctl bootout "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.alvintay.kanban-lite.plist"
+```
+
+To enable it again, run `launchctl bootstrap` with the same domain and plist
+path. To permanently disable auto-start, boot it out and remove that plist.
+For Linux/Windows, use your platform's service manager with the same absolute
+entrypoint, data directory, and single-writer rule; the macOS recipe does not
+apply there.
+
+## Copy-paste auto-start and tracking prompts
+
+Auto-start setup prompt for Codex or Claude Code:
+
+```text
+Set up Kanban Lite to start at my macOS login and restart after a crash. This
+request authorizes configuring its per-user LaunchAgent. Inspect existing
+listeners, LaunchAgents, service lock, installed build and MCP configuration
+first. Reuse the established data directory; if it cannot be verified, ask me
+for its exact path before starting anything. Back up the board through its
+supported backup command and preserve any existing agent before changes. Use
+absolute Node/build paths, private permissions, and local-only binding. Never
+start a second writer or disclose credentials. Verify health and preservation
+of existing projects/cards, then open http://localhost:4317/. Guide me through
+one-time passkey enrollment; leave Touch ID/PIN approval to me. Do not merge,
+publish, configure remote access, or claim passkey acceptance without testing.
+```
+
+Project-chat confirmation prompt for Codex's global instructions:
+
+```text
+Offer Kanban Lite tracking once in new or existing chats belonging to a Codex
+project: "Do you want to create this into Kanban Lite MCP?" Resolve membership
+from explicit project context or the Codex app's current-chat projectId; check
+list_threads/list_projects if available and needed. Do not infer membership
+from a working directory or Git repository alone. If projectless or uncertain,
+skip the automatic offer and continue work. Do not repeat the offer in the same
+chat, and do not treat no answer as consent. Before confirmation, do not load
+the Kanban workflow or call Kanban tools. After confirmation, inspect existing
+projects/cards, verify the repository root, reuse matching cards, and record
+only evidence that ran. Confirmation covers the identified task, not every
+future request. Tracking must not block independently authorized work. A decline
+or "Stop Kanban tracking" disables automatic tracking for that chat. This rule
+creates no background monitor or automatic synchronization.
+```
+
+This is agent instruction behavior, not a guaranteed application event hook.
+MCP installation alone does not enable confirmation prompts. Project membership
+metadata and the loaded host instructions determine whether the offer applies.
+
+## Changelog highlights
+
+The complete release history is in [CHANGELOG.md](CHANGELOG.md).
+
+- **Unreleased:** persistent passkey enrollment/sign-in, browser logout, CLI
+  recovery, schema-2 credential storage, and auto-start/setup documentation.
+  Restoring a backup also restores its passkey access trust.
+- **0.2.0:** fresh one-time browser login links through `kanban-lite open`,
+  without restarting the service or ending other browser sessions.
+
+Passkeys and logout on this development branch are not implied to exist in an
+older npm release. Use the reviewed source/installed build until a containing
+release is published.

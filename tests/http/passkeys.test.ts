@@ -113,3 +113,75 @@ test("enrollment requires fresh authenticated session and CSRF; ceremonies are b
     rmSync(dir, { recursive: true, force: true });
   }
 });
+test("logout revokes only the current session and rejects cross-site or CSRF-less requests", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "kanban-logout-"));
+  const store = openStore(join(dir, "board.sqlite"));
+  const server = await startServer(store, { dataDir: dir, port: 0 });
+  const origin = server.url.replace("127.0.0.1", "localhost");
+  try {
+    async function login(token: string) {
+      const r = await fetch(origin + "/api/session", {
+        method: "POST",
+        headers: { Origin: origin, "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      return {
+        cookie: r.headers.get("set-cookie")!.split(";")[0]!,
+        csrf: (await r.json()).csrf as string,
+      };
+    }
+    const first = await login(new URL(server.bootstrapUrl).hash.slice(1));
+    const credential = (await import("node:fs")).readFileSync(
+      join(dir, "credential"),
+      "utf8",
+    );
+    const link = await fetch(server.url + "/ops/session", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + credential,
+        "Content-Type": "application/json",
+      },
+      body: "{}",
+    });
+    const second = await login(new URL((await link.json()).url).hash.slice(1));
+    const logout = (csrf: string, from = origin) =>
+      fetch(origin + "/api/logout", {
+        method: "POST",
+        headers: {
+          Origin: from,
+          Cookie: first.cookie,
+          "X-CSRF-Token": csrf,
+          "Content-Type": "application/json",
+        },
+        body: "{}",
+      });
+    assert.equal((await logout("")).status, 403);
+    assert.equal(
+      (await logout(first.csrf, "https://evil.example")).status,
+      403,
+    );
+    const result = await logout(first.csrf);
+    assert.equal(result.status, 200);
+    assert.match(result.headers.get("set-cookie")!, /Max-Age=0/);
+    assert.equal(
+      (
+        await fetch(origin + "/api/projects", {
+          headers: { Cookie: first.cookie },
+        })
+      ).status,
+      401,
+    );
+    assert.equal(
+      (
+        await fetch(origin + "/api/projects", {
+          headers: { Cookie: second.cookie },
+        })
+      ).status,
+      200,
+    );
+  } finally {
+    await server.close();
+    store.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

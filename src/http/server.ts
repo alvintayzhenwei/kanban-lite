@@ -198,6 +198,15 @@ export async function startServer(
       const session = sessions.session(req);
       if (mutation && req.headers["x-csrf-token"] !== session.csrf)
         throw new HttpError(403, "Invalid CSRF token.");
+      if (url.pathname === "/api/logout" && method === "POST") {
+        object(await jsonBody(req), []);
+        sessions.logout(session.id);
+        res.setHeader("Set-Cookie", [
+          "kanban_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0",
+          "kanban_preauth=; HttpOnly; SameSite=Strict; Path=/api/passkeys; Max-Age=0",
+        ]);
+        return send(res, 200, { loggedOut: true });
+      }
       if (url.pathname === "/api/session" && method === "GET")
         return send(res, 200, { csrf: session.csrf });
       if (url.pathname === "/api/passkeys" && method === "GET")

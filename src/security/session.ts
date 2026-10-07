@@ -73,6 +73,9 @@ export function createSessions(dataDir: string) {
   }
   return {
     issueSession,
+    logout(id: string) {
+      sessions.delete(id);
+    },
     invalidateAll() {
       sessions.clear();
     },

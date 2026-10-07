@@ -78,7 +78,7 @@ If an earlier prompt produced card proposals but did not enter them, paste this 
 Create the cards you already proposed in Kanban Lite using the authenticated browser UI. This authorizes card entry only; do not begin implementation, reconcile the repository baseline, merge, or deploy. Select the intended repository project, inspect existing cards to avoid duplicates, and create the missing proposed cards with their descriptions, phases, blockers, artifact paths, and verification criteria. Keep criteria in descriptions, not passing evidence. Verify the saved cards in the board and report created/skipped counts. If browser access or authentication is blocked, report the exact blocker rather than claiming success. Do not write directly to the database or use nonexistent MCP tools.
 ```
 
-Opening the plain URL in another browser may show an unauthenticated board. Reuse the browser tab opened with `--open`; browser sessions are not shared across Chrome and the Codex in-app browser. If that session expired, restart the service you own with `--open` and the same data directory, or ask its owner to reopen an authenticated session. Do not stop another chat's service without authorization.
+Opening the plain URL in another browser may show an unauthenticated board. Reuse the browser tab opened with `--open`; browser sessions are not shared across Chrome and the Codex in-app browser. If that session expired, use **Sign in with passkey** if enrolled, or run `kanban-lite open --data-dir /path/to/your/kanban-data` to obtain a fresh browser login without restarting the service. Do not stop another chat's service without authorization.
 
 ## Restart and alternate settings
 
@@ -91,3 +91,7 @@ npm start -- --open --port 4320 --data-dir /absolute/path/to/kanban-data
 ```
 
 Use the same data directory on subsequent restarts and backups. If the service reports an active writer lock, inspect the existing service instead of deleting its lock. See [storage and recovery](../README.md#storage-and-recovery) before restoring data.
+
+## Auto-start, logout, and confirmation prompts
+
+See the README for the macOS LaunchAgent recipe, copy-paste auto-start and project-chat confirmation prompts, and **Log out → Sign in with passkey** acceptance steps. MCP setup alone does not install an automatic chat prompt.

@@ -30,8 +30,12 @@ test("owner enrolls then signs in after cookies expire and service restarts", as
       .getByRole("button", { name: "Create passkey", exact: true })
       .click();
     await expect(page.getByText("Passkey created.")).toBeVisible();
-    await context.clearCookies();
-    await page.reload();
+    await page.getByRole("button", { name: "Log out", exact: true }).click();
+    await expect(page.locator("#login-panel")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Log out", exact: true }),
+    ).toBeHidden();
+    expect(store.db.prepare("SELECT id FROM passkeys").all()).toHaveLength(1);
     await page
       .getByRole("button", { name: "Sign in with passkey", exact: true })
       .click();

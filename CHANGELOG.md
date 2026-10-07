@@ -4,6 +4,9 @@
 
 ### Added
 
+- Browser logout revokes the current session while preserving enrolled keys and other browsers.
+- README guides for logout/relogin, macOS auto-start, and project-chat confirmation prompts.
+
 - Persistent local browser passkeys with authenticated enrollment, device verification, key removal, and CLI recovery.
 - Canonical localhost browser login, with the existing IPv4-loopback MCP endpoint retained.
 

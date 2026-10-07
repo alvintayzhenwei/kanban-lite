@@ -25,6 +25,7 @@ function message(error, target = "message") {
 }
 function loginRequired(error) {
   $("workspace").hidden = true;
+  $("logout").hidden = true;
   $("login-panel").hidden = false;
   $("login-error").textContent = error.message;
   for (const dialog of document.querySelectorAll("dialog[open]"))
@@ -398,6 +399,7 @@ async function load() {
     await refresh();
     $("login-panel").hidden = true;
     $("workspace").hidden = false;
+    $("logout").hidden = false;
     $("message").textContent = "";
   } catch (error) {
     if (error.status === 401) loginRequired(error);
@@ -454,3 +456,8 @@ if (location.hostname !== "localhost") {
   $("passkey-support").textContent =
     "Passkeys are unavailable in this browser. Open Chrome or use CLI recovery.";
 }
+
+$("logout").onclick = safely(async () => {
+  await request("/api/logout", { method: "POST", body: {} });
+  location.replace("/");
+});
