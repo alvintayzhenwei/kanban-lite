@@ -77,6 +77,9 @@ try {
     .getByRole("button", { name: "Build localhost board", exact: true })
     .waitFor();
   mkdirSync("docs/assets", { recursive: true });
+  await page
+    .getByRole("button", { name: "Do this later", exact: true })
+    .click();
   await page.screenshot({
     path: "docs/assets/board-desktop.png",
     fullPage: true,
@@ -84,6 +87,23 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
     path: "docs/assets/board-mobile.png",
+    fullPage: true,
+  });
+  const loggedOut = await browser.newPage({
+    viewport: { width: 1280, height: 900 },
+  });
+  await loggedOut.goto(server.url.replace("127.0.0.1", "localhost"));
+  await loggedOut.getByText("First-time setup", { exact: true }).click();
+  await loggedOut
+    .getByRole("button", { name: "Copy setup prompt", exact: true })
+    .waitFor();
+  await loggedOut.screenshot({
+    path: "docs/assets/onboarding-desktop.png",
+    fullPage: true,
+  });
+  await loggedOut.setViewportSize({ width: 390, height: 844 });
+  await loggedOut.screenshot({
+    path: "docs/assets/onboarding-mobile.png",
     fullPage: true,
   });
   console.log(

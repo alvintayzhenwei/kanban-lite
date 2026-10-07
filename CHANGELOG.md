@@ -4,6 +4,8 @@
 
 ### Added
 
+- Guided browser onboarding with Copy setup prompt, verified service reuse, deferred enrollment, and credential-storage guidance.
+
 - Browser logout revokes the current session while preserving enrolled keys and other browsers.
 - README guides for logout/relogin, macOS auto-start, and project-chat confirmation prompts.
 
