@@ -27,3 +27,5 @@ Restore validates schema and database integrity, preserves existing state in a `
 Schema-version-1 backups restore board data without passkeys; enroll again after CLI login. Older application versions cannot open the new schema. Use a backup made before upgrading to roll back.
 
 See [browser login recovery](../getting-started/browser-login.md) for CLI browser sessions and passkey recovery.
+
+[Back to Kanban Lite](../../README.md)

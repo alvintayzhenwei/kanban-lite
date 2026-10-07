@@ -69,3 +69,5 @@ of existing projects/cards, then open http://localhost:4317/. Guide me through
 one-time passkey enrollment; leave Touch ID/PIN approval to me. Do not merge,
 publish, configure remote access, or claim passkey acceptance without testing.
 ```
+
+[Back to Kanban Lite](../../README.md)

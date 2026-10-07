@@ -51,3 +51,5 @@ npm start -- --open --port 4320 --data-dir /path/to/kanban-data
 Database backups include public passkey credentials and the board owner's identity. Restoring a backup restores its access trust, including credentials removed after that backup. Schema-version-1 backups restore board data without passkeys; enroll again after CLI login. Older applications cannot open the new schema; use a pre-upgrade backup to roll back.
 
 Automated Chromium checks use virtual authenticators. Real macOS Touch ID/PIN and Codex embedded-browser acceptance require separate human verification. This is local browser login, not remote access or an extra human-approval gate for MCP actions. Repository acceptance records document automated results and pending human checks.
+
+[Back to Kanban Lite](../../README.md)

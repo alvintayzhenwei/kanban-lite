@@ -18,7 +18,7 @@ Use Node.js **24.21.0 or a newer Node 24 patch**. Node 25+ is not supported.
 npx --yes @alvintayzhenwei/kanban-lite start --open
 ```
 
-This starts the local service at `http://localhost:4317/` and opens an authenticated browser session. The upcoming `0.3.0` release candidate includes passkey onboarding and browser logout; those features are unavailable from npm until that release is published.
+This starts the local service at `http://localhost:4317/` and opens an authenticated browser session. Version `0.3.0` includes passkey onboarding and browser logout. Keep the terminal running, or follow the macOS auto-start guide.
 
 For a source checkout:
 
@@ -42,7 +42,7 @@ npm start -- --open
 
 ## Release status
 
-The **npm published** badge reports the registry version; **source version** reads `main/package.json` and does not establish publication. CI and Security badges show main-branch workflow status. The `0.3.0` release candidate adds passkeys, guided onboarding, browser logout, and macOS auto-start guidance; these features remain unavailable from npm until publication. The `kanban-lite open` browser login command arrived in `0.2.0`. Automated Chromium results do not establish real macOS Touch ID/PIN or Codex embedded-browser acceptance.
+The **npm published** badge reports the registry version; **source version** reads `main/package.json` and does not establish publication. CI and Security badges show main-branch workflow status. Published `0.3.0` includes passkeys, guided onboarding, browser logout, and macOS auto-start guidance. The `kanban-lite open` browser login command arrived in `0.2.0`. Automated Chromium results do not establish real macOS Touch ID/PIN or Codex embedded-browser acceptance.
 
 ## License
 

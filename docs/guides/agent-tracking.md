@@ -33,3 +33,5 @@ This prompt describes agent instruction behavior, not a guaranteed application e
 After project setup, select **Add project** and enter the development repository's absolute path. Create one card per implementable task. Attach repository-relative specs and plans as metadata. Record only verification that ran, and do not mark work Done without current passing evidence.
 
 The detailed [setup prompts](../setup-prompts.md) include browser setup, approved card entry, and recovery for a proposal-only chat. Card-entry approval authorizes only the proposed card changes; it does not authorize implementation, merge, or deployment.
+
+[Back to Kanban Lite](../../README.md)
