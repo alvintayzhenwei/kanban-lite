@@ -29,7 +29,9 @@ function validateBackup(path: string): void {
   try {
     if (
       db.prepare("PRAGMA integrity_check").get()?.integrity_check !== "ok" ||
-      db.prepare("PRAGMA user_version").get()?.user_version !== 1
+      ![1, 2].includes(
+        Number(db.prepare("PRAGMA user_version").get()?.user_version),
+      )
     )
       throw new Error("Invalid or unsupported backup.");
     db.prepare(

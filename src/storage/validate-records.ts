@@ -1,3 +1,7 @@
+import {
+  validatePasskeyKey,
+  validatePasskeyTransports,
+} from "../security/passkey-validation.js";
 import type { DatabaseSync } from "node:sqlite";
 import { isAbsolute } from "node:path";
 import { columns, phases } from "../domain/types.js";
@@ -37,6 +41,41 @@ function parse(value: unknown): RecordValue {
   }
 }
 export function validateRecords(db: DatabaseSync): void {
+  if (Number(db.prepare("PRAGMA user_version").get()?.user_version) === 2) {
+    const owners = db
+      .prepare("SELECT singleton,user_id FROM passkey_owner")
+      .all();
+    check(owners.length <= 1);
+    for (const owner of owners)
+      check(
+        owner.singleton === 1 && /^[a-f0-9]{64}$/.test(String(owner.user_id)),
+      );
+    for (const key of db.prepare("SELECT * FROM passkeys").all()) {
+      check(
+        owners.length === 1 &&
+          typeof key.id === "string" &&
+          /^[A-Za-z0-9_-]{1,2048}$/.test(key.id),
+      );
+      check(
+        key.public_key instanceof Uint8Array &&
+          key.public_key.length > 0 &&
+          key.public_key.length <= 4096,
+      );
+      validatePasskeyKey(key.public_key as Uint8Array);
+      check(integer(key.counter, 0) && date(key.created_at));
+      check(
+        ["singleDevice", "multiDevice"].includes(String(key.device_type)) &&
+          [0, 1].includes(Number(key.backed_up)),
+      );
+      check(
+        typeof key.registration_id === "string" &&
+          /^[a-f0-9]{64}$/.test(key.registration_id),
+      );
+      const transports: unknown = JSON.parse(String(key.transports));
+      validatePasskeyTransports(transports);
+    }
+  }
+
   const projects = new Map<string, number>();
   for (const p of db
     .prepare("SELECT id,name,root,revision,created_at,wip_limit FROM projects")
