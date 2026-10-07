@@ -38,7 +38,7 @@ test("rollsBackFailedMigration", () => {
     assert.throws(() =>
       migrate(store.db, [
         {
-          version: 2,
+          version: 3,
           sql: "CREATE TABLE doomed(id TEXT); INSERT INTO absent VALUES(1);",
         },
       ]),
@@ -51,7 +51,7 @@ test("rollsBackFailedMigration", () => {
     );
     assert.equal(
       store.db.prepare("PRAGMA user_version").get()?.user_version,
-      1,
+      2,
     );
   } finally {
     store.close();

@@ -129,6 +129,17 @@ Read the repository instructions and existing spec/plan documents. Use the Kanba
 
 Tools are `kanban_list_projects`, `kanban_register_project`, `kanban_list_cards`, `kanban_get_card`, `kanban_create_card`, `kanban_update_card`, `kanban_move_card`, `kanban_record_evidence`, `kanban_list_events`, and `kanban_update_project`. Host namespaces may add a prefix. Mutations require the current `expectedRevision`; creation requires 0. Tool results use `structuredContent.result`; failures carry `isError`, code/message, and current state for conflicts.
 
-The browser application still has zero third-party runtime dependencies. The optional adapter has two direct runtime dependencies (official MCP SDK and Zod), with its transitive packages locked separately. See [Release 2 acceptance](release-2-acceptance.md) for measured footprint and host evidence.
+The board uses pinned SimpleWebAuthn runtime libraries for browser passkeys; SQLite and HTTP remain built-in Node APIs. The optional adapter has two direct runtime dependencies (official MCP SDK and Zod), with its transitive packages locked separately. See [Release 2 acceptance](release-2-acceptance.md) for measured footprint and host evidence.
 
 Format grounding: [OpenAI plugin packaging](https://developers.openai.com/plugins/build/plugins), [Claude plugin reference](https://code.claude.com/docs/en/plugins-reference), and the installed host CLI help. These local stdio packages target local hosts, not cloud/web/mobile runtimes.
+
+## Browser passkeys
+
+The browser board is `http://localhost:4317/` by default. Enroll through an
+authenticated CLI-link session under **Passkeys → Create passkey**, then use
+**Sign in with passkey** on returning visits. MCP continues to use its local
+credential and IPv4-loopback endpoint. For first enrollment, unsupported
+browsers, or lost keys, run `kanban-lite open --data-dir /path/to/your/kanban-data`.
+Use the exact data directory already configured for the established service.
+Do not start another writer. See the README's passkey section for key removal,
+fresh verification, and backup recovery trust.

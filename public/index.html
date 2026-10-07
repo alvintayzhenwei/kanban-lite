@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Kanban Lite</title>
     <link rel="stylesheet" href="/styles.css" />
+    <script defer src="/webauthn.js"></script>
     <script type="module" src="/app.js"></script>
   </head>
   <body>
@@ -17,7 +18,13 @@
       ><button id="refresh">Refresh</button>
     </header>
     <section id="login-panel" hidden aria-labelledby="login-title">
-      <h1 id="login-title">Browser login required</h1>
+      <h1 id="login-title">Sign in to Kanban Lite</h1>
+      <button id="passkey-login" class="primary">Sign in with passkey</button>
+      <p id="passkey-support">
+        Use your enrolled passkey with Touch ID or your device PIN. For
+        first-time setup or recovery, use the command below.
+      </p>
+      <a id="localhost-link" hidden>Open localhost for passkeys</a>
       <p id="login-error" role="status" aria-live="polite"></p>
       <p>
         Your projects and cards are private. This browser needs its own login
@@ -48,6 +55,23 @@
     </section>
     <div id="workspace" class="workspace">
       <aside>
+        <details id="passkey-settings">
+          <summary>Passkeys</summary>
+          <p>
+            Create a passkey after signing in. Changes require a login within
+            five minutes.
+          </p>
+          <button id="create-passkey">Create passkey</button>
+          <button id="verify-passkey">Verify with passkey</button>
+          <p id="passkey-message" role="status" aria-live="polite"></p>
+          <div id="passkey-list"></div>
+          <p>
+            Removing a passkey signs out every browser. If you remove the last
+            one, use
+            <code>kanban-lite open --data-dir /path/to/your/kanban-data</code>
+            to recover.
+          </p>
+        </details>
         <p class="eyebrow">WORKSPACE</p>
         <h2>Your projects</h2>
         <label class="sr-only" for="project-filter">Project filter</label

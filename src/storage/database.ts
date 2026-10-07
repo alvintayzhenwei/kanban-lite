@@ -15,7 +15,7 @@ export function openStore(path: string): Store {
     const version = Number(
       db.prepare("PRAGMA user_version").get()?.user_version ?? 0,
     );
-    if (version > 1)
+    if (version > 2)
       throw new Error("Database schema is newer than this application.");
     migrate(db);
     if (path !== ":memory:") chmodSync(path, 0o600);

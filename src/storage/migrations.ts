@@ -9,6 +9,13 @@ CREATE TABLE evidence(id INTEGER PRIMARY KEY AUTOINCREMENT,card_id TEXT NOT NULL
 CREATE TABLE events(id INTEGER PRIMARY KEY AUTOINCREMENT,entity_id TEXT NOT NULL,data TEXT NOT NULL);
 `,
   },
+  {
+    version: 2,
+    sql: `
+CREATE TABLE passkey_owner(singleton INTEGER PRIMARY KEY CHECK(singleton=1),user_id TEXT NOT NULL);
+CREATE TABLE passkeys(id TEXT PRIMARY KEY,public_key BLOB NOT NULL,counter INTEGER NOT NULL,transports TEXT NOT NULL,created_at TEXT NOT NULL,device_type TEXT NOT NULL,backed_up INTEGER NOT NULL,registration_id TEXT NOT NULL);
+`,
+  },
 ];
 export function migrate(db: DatabaseSync, steps = migrations): void {
   for (const step of steps) {

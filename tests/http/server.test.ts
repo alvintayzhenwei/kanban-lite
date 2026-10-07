@@ -100,7 +100,10 @@ test("fresh browser links preserve sessions and require local credentials", asyn
   }
   assert.notEqual(links[0], links[1]);
   for (const link of links) {
-    assert.equal(new URL(link).origin, server.url);
+    assert.equal(
+      new URL(link).origin,
+      server.url.replace("127.0.0.1", "localhost"),
+    );
     const login = () =>
       fetch(`${server.url}/api/session`, {
         method: "POST",

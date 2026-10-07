@@ -5,7 +5,8 @@ import {
 } from "node:http";
 import { readFile } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
-import { timingSafeEqual } from "node:crypto";
+import { createPasskeys } from "../security/passkeys.js";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import { join } from "node:path";
 import { backupStore } from "../storage/backup.js";
 import type { Store } from "../storage/database.js";
@@ -52,6 +53,7 @@ const { version } = JSON.parse(
 const files: Record<string, { file: string; type: string }> = {
   "/": { file: "index.html", type: "text/html" },
   "/app.js": { file: "app.js", type: "text/javascript" },
+  "/passkeys.js": { file: "passkeys.js", type: "text/javascript" },
   "/api.js": { file: "api.js", type: "text/javascript" },
   "/styles.css": { file: "styles.css", type: "text/css" },
 };
@@ -61,6 +63,7 @@ export async function startServer(
 ): Promise<RunningServer> {
   const sessions = createSessions(config.dataDir);
   let origin = "";
+  let browserOrigin = "";
   const server = createServer((req, res) => {
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("X-Content-Type-Options", "nosniff");
@@ -70,9 +73,17 @@ export async function startServer(
       "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
     );
     void (async () => {
-      if (req.headers.host !== new URL(origin).host)
+      if (
+        ![new URL(origin).host, new URL(browserOrigin).host].includes(
+          req.headers.host ?? "",
+        )
+      )
         throw new HttpError(403, "Invalid Host.");
-      const url = new URL(req.url ?? "/", origin);
+      const requestOrigin =
+        req.headers.host === new URL(browserOrigin).host
+          ? browserOrigin
+          : origin;
+      const url = new URL(req.url ?? "/", requestOrigin);
       const method = req.method ?? "GET";
       if (method === "GET" && url.pathname === "/health")
         return send(res, 200, {
@@ -81,6 +92,19 @@ export async function startServer(
           protocolVersion: 1,
           agentProtocolVersion: 1,
         });
+      if (method === "GET" && url.pathname === "/webauthn.js") {
+        const data = await readFile(
+          new URL(
+            "../dist/bundle/index.umd.min.js",
+            import.meta.resolve("@simplewebauthn/browser"),
+          ),
+        );
+        res.writeHead(200, {
+          "Content-Type": "text/javascript; charset=utf-8",
+        });
+        res.end(data);
+        return;
+      }
       if (method === "GET" && files[url.pathname]) {
         const asset = files[url.pathname]!;
         const data = await readFile(new URL(asset.file, assets));
@@ -95,7 +119,9 @@ export async function startServer(
       if (url.pathname === "/ops/session" && method === "POST") {
         authenticateAgent(req, config.dataDir);
         object(await jsonBody(req), []);
-        return send(res, 200, { url: `${origin}/?login#${sessions.issue()}` });
+        return send(res, 200, {
+          url: `${browserOrigin}/?login#${sessions.issue()}`,
+        });
       }
       if (url.pathname === "/ops/backup" && method === "POST") {
         const credential = readFileSync(
@@ -119,7 +145,10 @@ export async function startServer(
       if (!url.pathname.startsWith("/api/"))
         throw new HttpError(404, "Not found.");
       const mutation = !["GET", "HEAD"].includes(method);
-      if ((mutation || req.headers.origin) && req.headers.origin !== origin)
+      if (
+        (mutation || req.headers.origin) &&
+        req.headers.origin !== requestOrigin
+      )
         throw new HttpError(403, "Invalid Origin.");
       if (url.pathname === "/api/session" && method === "POST") {
         const b = object(await jsonBody(req), ["token"]);
@@ -127,11 +156,93 @@ export async function startServer(
         res.setHeader("Set-Cookie", result.cookie);
         return send(res, 200, { csrf: result.csrf });
       }
+      if (
+        url.pathname.startsWith("/api/passkeys/") &&
+        url.pathname.includes("/authenticate/")
+      ) {
+        if (method !== "POST" || req.headers.origin !== browserOrigin)
+          throw new HttpError(403, "Use the localhost board for passkeys.");
+        const b = await jsonBody(req);
+        const cookie = req.headers.cookie
+          ?.split(";")
+          .map((v) => v.trim())
+          .find((v) => v.startsWith("kanban_preauth="))
+          ?.slice(15);
+        if (url.pathname === "/api/passkeys/authenticate/options") {
+          object(b, []);
+          const binding =
+            cookie && /^[a-f0-9]{64}$/.test(cookie)
+              ? cookie
+              : randomBytes(32).toString("hex");
+          // Global ceremony limits also bound clients which discard cookies.
+          const options = await passkeys.authenticationOptions(binding);
+          res.setHeader(
+            "Set-Cookie",
+            `kanban_preauth=${binding}; HttpOnly; SameSite=Strict; Path=/api/passkeys; Max-Age=300`,
+          );
+          return send(res, 200, options);
+        }
+        if (url.pathname === "/api/passkeys/authenticate/verify") {
+          if (!cookie || !/^[a-f0-9]{64}$/.test(cookie))
+            throw new HttpError(401, "Start passkey sign-in again.");
+          await passkeys.verifyAuthentication(cookie, b);
+          const result = sessions.issueSession(Date.now());
+          res.setHeader("Set-Cookie", [
+            result.cookie,
+            "kanban_preauth=; HttpOnly; SameSite=Strict; Path=/api/passkeys; Max-Age=0",
+          ]);
+          return send(res, 200, { csrf: result.csrf });
+        }
+        throw new HttpError(404, "Not found.");
+      }
       const session = sessions.session(req);
       if (mutation && req.headers["x-csrf-token"] !== session.csrf)
         throw new HttpError(403, "Invalid CSRF token.");
       if (url.pathname === "/api/session" && method === "GET")
         return send(res, 200, { csrf: session.csrf });
+      if (url.pathname === "/api/passkeys" && method === "GET")
+        return send(
+          res,
+          200,
+          passkeys.keys
+            .list()
+            .map((k) => ({ id: k.id, createdAt: k.createdAt })),
+        );
+      if (url.pathname.startsWith("/api/passkeys")) {
+        if (req.headers.origin !== browserOrigin)
+          throw new HttpError(403, "Use the localhost board for passkeys.");
+        if (!sessions.valid(session.id))
+          throw new HttpError(401, "Sign in again before managing passkeys.");
+        if (
+          method === "POST" &&
+          url.pathname === "/api/passkeys/register/options"
+        ) {
+          object(await jsonBody(req), []);
+          return send(res, 200, await passkeys.registrationOptions(session.id));
+        }
+        if (
+          method === "POST" &&
+          url.pathname === "/api/passkeys/register/verify"
+        ) {
+          await passkeys.verifyRegistration(
+            session.id,
+            await jsonBody(req),
+            () => sessions.valid(session.id),
+          );
+          return send(res, 200, { saved: true });
+        }
+        if (method === "DELETE" && url.pathname.startsWith("/api/passkeys/")) {
+          const id = decodeURIComponent(
+            url.pathname.slice("/api/passkeys/".length),
+          );
+          if (!passkeys.keys.remove(id))
+            throw new HttpError(404, "Passkey not found.");
+          passkeys.invalidate();
+          sessions.invalidateAll();
+          return send(res, 200, { removed: true });
+        }
+        throw new HttpError(404, "Not found.");
+      }
       const body =
         mutation && method !== "DELETE" ? await jsonBody(req) : undefined;
       send(
@@ -161,9 +272,11 @@ export async function startServer(
     });
   });
   origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  browserOrigin = origin.replace("127.0.0.1", "localhost");
+  const passkeys = createPasskeys(store, browserOrigin);
   return {
     url: origin,
-    bootstrapUrl: `${origin}/#${sessions.token}`,
+    bootstrapUrl: `${browserOrigin}/#${sessions.token}`,
     close: () =>
       new Promise<void>((resolve, reject) => {
         server.close((error) => (error ? reject(error) : resolve()));

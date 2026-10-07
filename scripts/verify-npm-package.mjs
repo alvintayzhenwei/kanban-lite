@@ -1,3 +1,4 @@
+import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -77,7 +78,45 @@ try {
       ).status,
       200,
     );
-    for (const path of ["/health", "/", "/app.js", "/styles.css"]) {
+    const browser = await chromium.launch();
+    try {
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      const cdp = await context.newCDPSession(page);
+      await cdp.send("WebAuthn.enable");
+      await cdp.send("WebAuthn.addVirtualAuthenticator", {
+        options: {
+          protocol: "ctap2",
+          transport: "internal",
+          hasResidentKey: true,
+          hasUserVerification: true,
+          isUserVerified: true,
+          automaticPresenceSimulation: true,
+        },
+      });
+      await page.goto(await requestBrowserLogin(join(temporary, "data")));
+      await page.getByText("Passkeys", { exact: true }).click();
+      await page
+        .getByRole("button", { name: "Create passkey", exact: true })
+        .click();
+      await page.getByText("Passkey created.", { exact: true }).waitFor();
+      await context.clearCookies();
+      await page.reload();
+      await page
+        .getByRole("button", { name: "Sign in with passkey", exact: true })
+        .click();
+      await page.locator("#workspace").waitFor({ state: "visible" });
+    } finally {
+      await browser.close();
+    }
+    for (const path of [
+      "/health",
+      "/",
+      "/app.js",
+      "/styles.css",
+      "/passkeys.js",
+      "/webauthn.js",
+    ]) {
       const response = await fetch(`${app.url}${path}`);
       assert.equal(response.status, 200, path);
       assert((await response.text()).length > 0, path);

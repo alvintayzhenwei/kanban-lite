@@ -1,3 +1,4 @@
+import { registerPasskey, signInWithPasskey } from "./passkeys.js";
 import { authenticate, request } from "./api.js";
 const $ = (id) => document.getElementById(id);
 const columns = ["Backlog", "Ready", "In Progress", "Review", "Done"];
@@ -40,14 +41,26 @@ function safely(fn, target = "message") {
           b.disabled,
         ])
       : [];
-    for (const [b] of controls) b.disabled = true;
+    const trigger = event?.currentTarget;
+    if (
+      trigger instanceof HTMLButtonElement &&
+      !controls.some(([b]) => b === trigger)
+    )
+      controls.push([trigger, trigger.disabled]);
+    for (const [b] of controls) {
+      b.disabled = true;
+      b.setAttribute("aria-busy", "true");
+    }
     try {
       await fn(event);
     } catch (error) {
       if (error.status === 401) loginRequired(error);
       else message(error, target);
     } finally {
-      for (const [b, disabled] of controls) b.disabled = disabled;
+      for (const [b, disabled] of controls) {
+        b.disabled = disabled;
+        b.removeAttribute("aria-busy");
+      }
       pending = false;
     }
   };
@@ -393,3 +406,51 @@ async function load() {
 }
 $("retry-login").onclick = load;
 await load();
+
+async function refreshPasskeys() {
+  const list = $("passkey-list");
+  list.replaceChildren();
+  for (const key of await request("/api/passkeys")) {
+    const row = element("div");
+    row.append(
+      element("p", "Created " + new Date(key.createdAt).toLocaleString()),
+    );
+    const remove = element("button", "Remove passkey");
+    remove.onclick = safely(async () => {
+      await request("/api/passkeys/" + encodeURIComponent(key.id), {
+        method: "DELETE",
+      });
+      await load();
+    }, "passkey-message");
+    row.append(remove);
+    list.append(row);
+  }
+}
+$("passkey-settings").addEventListener("toggle", () => {
+  if ($("passkey-settings").open)
+    refreshPasskeys().catch((e) => message(e, "passkey-message"));
+});
+$("create-passkey").onclick = safely(async () => {
+  await registerPasskey();
+  $("passkey-message").textContent = "Passkey created.";
+  await refreshPasskeys();
+}, "passkey-message");
+$("verify-passkey").onclick = safely(async () => {
+  await signInWithPasskey();
+  $("passkey-message").textContent =
+    "Passkey verified. You can manage passkeys for five minutes.";
+}, "passkey-message");
+$("passkey-login").onclick = safely(async () => {
+  await signInWithPasskey();
+  await load();
+}, "login-error");
+if (location.hostname !== "localhost") {
+  const link = $("localhost-link");
+  link.hidden = false;
+  link.href = "http://localhost:" + location.port + "/";
+  $("passkey-login").disabled = true;
+} else if (!window.PublicKeyCredential) {
+  $("passkey-login").disabled = true;
+  $("passkey-support").textContent =
+    "Passkeys are unavailable in this browser. Open Chrome or use CLI recovery.";
+}

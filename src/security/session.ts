@@ -36,7 +36,10 @@ export function createSessions(dataDir: string) {
     return token;
   }
   const token = issue();
-  const sessions = new Map<string, { csrf: string; expires: number }>();
+  const sessions = new Map<
+    string,
+    { csrf: string; expires: number; verifiedAt: number; id: string }
+  >();
   function session(req: IncomingMessage) {
     const key = req.headers.cookie
       ?.split(";")
@@ -50,7 +53,35 @@ export function createSessions(dataDir: string) {
     }
     return found;
   }
+  function issueSession(verifiedAt = Date.now()) {
+    for (const [key, s] of sessions)
+      if (s.expires < Date.now()) sessions.delete(key);
+    if (sessions.size >= 100)
+      throw new HttpError(429, "Too many browser sessions.");
+    const id = random(),
+      csrf = random();
+    sessions.set(id, {
+      id,
+      csrf,
+      verifiedAt,
+      expires: Date.now() + 8 * 60 * 60 * 1000,
+    });
+    return {
+      csrf,
+      cookie: `kanban_session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800`,
+    };
+  }
   return {
+    issueSession,
+    invalidateAll() {
+      sessions.clear();
+    },
+    valid(id: string) {
+      const s = sessions.get(id);
+      return (
+        !!s && s.expires > Date.now() && Date.now() - s.verifiedAt < 300000
+      );
+    },
     token,
     issue,
     session,
@@ -63,15 +94,7 @@ export function createSessions(dataDir: string) {
       if (!match || match[1] <= Date.now())
         throw new HttpError(401, "Invalid, expired or used session link.");
       links.delete(match[0]);
-      for (const [key, s] of sessions)
-        if (s.expires < Date.now()) sessions.delete(key);
-      const id = random(),
-        csrf = random();
-      sessions.set(id, { csrf, expires: Date.now() + 8 * 60 * 60 * 1000 });
-      return {
-        csrf,
-        cookie: `kanban_session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800`,
-      };
+      return issueSession();
     },
   };
 }

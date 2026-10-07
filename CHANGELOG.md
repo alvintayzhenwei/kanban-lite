@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Persistent local browser passkeys with authenticated enrollment, device verification, key removal, and CLI recovery.
+- Canonical localhost browser login, with the existing IPv4-loopback MCP endpoint retained.
+
+### Changed
+
+- Database schema 2 stores public passkey credentials. Older backups remain restorable; restoring credentials also restores their access trust. Older binaries require a pre-upgrade backup for rollback.
+- Passkey functionality adds pinned SimpleWebAuthn runtime dependencies served locally.
+
 ## 0.2.0
 
 ### Added

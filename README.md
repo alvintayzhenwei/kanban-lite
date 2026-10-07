@@ -9,7 +9,7 @@
 
 A local Kanban board for developers and coding agents working across multiple repositories. Keep cards, blockers, artifact links, and verification evidence in one place, with a browser interface and optional Claude Code/Codex tools.
 
-Runs on your machine with SQLite storage and **zero third-party runtime dependencies**. No Docker, external database, cloud account, or model API is required.
+Runs on your machine with SQLite storage and built-in SQLite and HTTP APIs. No Docker, external database, cloud account, or model API is required.
 
 ## What you can do
 
@@ -129,7 +129,7 @@ Restore validates schema and database integrity, preserves existing state in a `
 
 ## Lightweight by design
 
-The running application has **zero third-party runtime dependencies**. SQLite and HTTP use Node's built-in APIs; the browser uses native modules and controls. The optional MCP adapter has separate locked SDK/schema dependencies; they are not required for the browser board. Development dependencies provide compilation, linting, formatting, and browser tests and are not needed to run the built application. Node 24 SQLite API maturity may vary by patch; this project verifies the pinned patch.
+SQLite and HTTP use Node's built-in APIs. Passkey verification and browser ceremonies use pinned SimpleWebAuthn runtime libraries; the browser helper is served locally. The optional MCP adapter has separate locked SDK/schema dependencies; they are not required for the browser board. Development dependencies provide compilation, linting, formatting, and browser tests and are not needed to run the built application. Node 24 SQLite API maturity may vary by patch; this project verifies the pinned patch.
 
 Observed startup, memory, and package measurements are recorded in [Release 1 acceptance](https://github.com/alvintayzhenwei/kanban-lite/blob/main/docs/release-1-acceptance.md). These measurements characterize one machine, not universal performance guarantees.
 
@@ -159,3 +159,35 @@ Kanban Lite is licensed under the [MIT License](https://github.com/alvintayzhenw
 3. **Workflow integration:** read-only OpenSpec import/reconciliation and project workflow modes for Agent Skills, Superpowers, or both. Preserve source authority and approval gates.
 
 See the [design](https://github.com/alvintayzhenwei/kanban-lite/blob/main/docs/superpowers/specs/2026-10-01-kanban-lite-design.md) and [Release 1 plan](https://github.com/alvintayzhenwei/kanban-lite/blob/main/docs/superpowers/plans/2026-10-01-release-1.md).
+
+## Passkey browser login
+
+Open `http://localhost:4317/` (or your configured port). For first-time setup,
+run `kanban-lite open --data-dir /path/to/your/kanban-data` on the board's host.
+In the authenticated board, expand **Passkeys**, choose **Create passkey**, and
+approve with your device's credential manager, Touch ID, or PIN.
+
+After the eight-hour browser session expires or the service restarts, choose
+**Sign in with passkey** directly in the browser. Enrollment persists in the
+same board database. MCP credentials are separate and do not sign in browsers.
+
+Adding or removing keys requires a login verified within five minutes. Use
+**Verify with passkey** to refresh verification, or run the CLI command again.
+Removing a key signs out all browser sessions; removing the final key requires
+CLI recovery to enroll again. Keep access to the board host and data directory.
+
+Use `localhost` consistently for passkeys; `127.0.0.1` remains the MCP endpoint
+and supports existing CLI login sessions. Passkey registration offers ES256
+(P-256), a widely supported authenticator algorithm. Browser helpers are served
+locally. Unsupported browsers retain CLI recovery guidance.
+
+Database backups include public passkey credentials and the board owner's
+identity. Restoring a backup restores its access trust, including credentials
+removed since that backup. Schema-version-1 backups restore board data without
+passkeys; enroll again after CLI login. Older applications cannot open the new
+schema; use a pre-upgrade backup to roll back.
+
+Automated Chromium checks use virtual authenticators. Real macOS Touch ID/PIN
+and Codex embedded-browser acceptance must be verified separately before
+claiming support on those devices. This is local browser login, not remote
+access or an additional human-approval gate for MCP actions.

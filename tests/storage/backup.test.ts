@@ -51,7 +51,7 @@ test("invalid restore leaves current database unchanged", async (t) => {
   writeFileSync(invalid, "not sqlite");
   await assert.rejects(restoreStore(dir, invalid));
   assert.deepEqual(readFileSync(join(dir, "board.sqlite")), before);
-  assert.equal(store.db.prepare("PRAGMA user_version").get()?.user_version, 1);
+  assert.equal(store.db.prepare("PRAGMA user_version").get()?.user_version, 2);
 });
 test("restore replaces stopped store with a verified backup", async (t) => {
   const { store, dir, repo } = fixture(t);
