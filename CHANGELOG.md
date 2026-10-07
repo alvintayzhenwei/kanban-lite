@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.3.0 — release candidate
+
 ### Added
 
 - Guided browser onboarding with Copy setup prompt, verified service reuse, deferred enrollment, and credential-storage guidance.
@@ -13,6 +15,9 @@
 - Canonical localhost browser login, with the existing IPv4-loopback MCP endpoint retained.
 
 ### Changed
+
+- Shorter README with detailed setup and operations guides under `docs/`, included in npm packages.
+- Manual release-workflow runs validate without publishing; stable version tags remain the publication trigger.
 
 - Database schema 2 stores public passkey credentials. Older backups remain restorable; restoring credentials also restores their access trust. Older binaries require a pre-upgrade backup for rollback.
 - Passkey functionality adds pinned SimpleWebAuthn runtime dependencies served locally.

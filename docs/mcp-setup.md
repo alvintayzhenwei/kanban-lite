@@ -125,11 +125,11 @@ Read the repository instructions and existing spec/plan documents. Use the Kanba
 - `CONFLICT`: compare returned current state and reconcile; never blindly retry with a newer revision.
 - `POLICY`: current passing evidence is required for Done. MCP offers no human override.
 - Missing tools: verify Node, installed adapter dependencies, host enablement, and a new session after installation.
-- Browser login required: MCP access does not sign in Chrome or Codex's browser. From the source repository, run `node dist/src/cli.js open --data-dir /path/to/kanban-data` with the same directory as the adapter. On macOS, add `--browser "Google Chrome"` to choose Chrome. The command opens a fresh one-time login without restarting the board or invalidating existing sessions. See [browser login instructions](../README.md#start-locally); older services require one rebuild/restart after upgrading.
+- Browser login required: MCP access does not sign in Chrome or Codex's browser. From the source repository, run `node dist/src/cli.js open --data-dir /path/to/kanban-data` with the same directory as the adapter. On macOS, add `--browser "Google Chrome"` to choose Chrome. The command opens a fresh one-time login without restarting the board or invalidating existing sessions. See [browser login instructions](getting-started/browser-login.md); older services require one rebuild/restart after upgrading.
 
 Tools are `kanban_list_projects`, `kanban_register_project`, `kanban_list_cards`, `kanban_get_card`, `kanban_create_card`, `kanban_update_card`, `kanban_move_card`, `kanban_record_evidence`, `kanban_list_events`, and `kanban_update_project`. Host namespaces may add a prefix. Mutations require the current `expectedRevision`; creation requires 0. Tool results use `structuredContent.result`; failures carry `isError`, code/message, and current state for conflicts.
 
-The board uses pinned SimpleWebAuthn runtime libraries for browser passkeys; SQLite and HTTP remain built-in Node APIs. The optional adapter has two direct runtime dependencies (official MCP SDK and Zod), with its transitive packages locked separately. See [Release 2 acceptance](release-2-acceptance.md) for measured footprint and host evidence.
+The board uses pinned SimpleWebAuthn runtime libraries for browser passkeys; SQLite and HTTP remain built-in Node APIs. The optional adapter has two direct runtime dependencies (official MCP SDK and Zod), with its transitive packages locked separately. See [Release 2 acceptance](https://github.com/alvintayzhenwei/kanban-lite/blob/main/docs/release-2-acceptance.md) for measured footprint and host evidence.
 
 Format grounding: [OpenAI plugin packaging](https://developers.openai.com/plugins/build/plugins), [Claude plugin reference](https://code.claude.com/docs/en/plugins-reference), and the installed host CLI help. These local stdio packages target local hosts, not cloud/web/mobile runtimes.
 
@@ -141,5 +141,5 @@ authenticated CLI-link session under **Passkeys → Create passkey**, then use
 credential and IPv4-loopback endpoint. For first enrollment, unsupported
 browsers, or lost keys, run `kanban-lite open --data-dir /path/to/your/kanban-data`.
 Use the exact data directory already configured for the established service.
-Do not start another writer. See the README's passkey section for key removal,
+Do not start another writer. See [browser login](getting-started/browser-login.md) for key removal,
 fresh verification, and backup recovery trust.

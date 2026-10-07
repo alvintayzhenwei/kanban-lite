@@ -90,8 +90,8 @@ For an occupied port or a separate board, choose explicit settings:
 npm start -- --open --port 4320 --data-dir /absolute/path/to/kanban-data
 ```
 
-Use the same data directory on subsequent restarts and backups. If the service reports an active writer lock, inspect the existing service instead of deleting its lock. See [storage and recovery](../README.md#storage-and-recovery) before restoring data.
+Use the same data directory on subsequent restarts and backups. If the service reports an active writer lock, inspect the existing service instead of deleting its lock. See [storage and recovery](guides/storage-recovery.md) before restoring data.
 
 ## Auto-start, logout, and confirmation prompts
 
-See the README for the macOS LaunchAgent recipe, copy-paste auto-start and project-chat confirmation prompts, and **Log out → Sign in with passkey** acceptance steps. MCP setup alone does not install an automatic chat prompt.
+See [auto-start](guides/auto-start.md), [agent tracking](guides/agent-tracking.md), and [browser login](getting-started/browser-login.md) for the LaunchAgent recipe, copy-paste prompts, and **Log out → Sign in with passkey** acceptance steps. MCP setup alone does not install an automatic chat prompt.
