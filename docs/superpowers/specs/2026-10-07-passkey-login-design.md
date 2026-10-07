@@ -1,7 +1,7 @@
 # Passkey browser login
 
 Date: 2026-10-07
-Status: Proposed for user review
+Status: Approved by user on 2026-10-07; implementation prepared for review
 
 ## Objective and approved direction
 
