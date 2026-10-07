@@ -56,7 +56,29 @@ npm run build
 npm start -- --open
 ```
 
-The service binds to `127.0.0.1:4317`. `--open` opens your default browser with a one-time session link, then removes the credential from the address bar. The terminal prints a plain URL without credentials. Browser sessions last eight hours; restart with `--open` to create another authenticated session. Tabs in the same browser share the session. Stop the service with Ctrl+C.
+The service binds to `127.0.0.1:4317`. `--open` opens your default browser with a one-time session link, then removes the credential from the address bar. The terminal prints a plain URL without credentials. Login links expire after five minutes; browser sessions last eight hours. Tabs in the same browser share a session; Chrome and Codex's browser need separate logins. Stop the service with Ctrl+C.
+
+Open the board through the running service at `http://127.0.0.1:4317/`. Do not open `public/index.html` as a `file://` page: the application needs the service's API and browser session.
+
+### Browser login
+
+To log in to another browser or renew an expired session, keep the service running and open a new terminal:
+
+```sh
+node dist/src/cli.js open --data-dir /path/to/your/kanban-data
+```
+
+Use the same data directory shown in the service terminal and configured in your MCP adapter. Omit `--data-dir` only if the service uses the default `~/.kanban-lite/`. For an installed package, use `kanban-lite open` (or `npx --yes @alvintayzhenwei/kanban-lite open`) with the same arguments.
+
+The `open` command is available from version `0.2.0`. Until that version is published, use the source-build command above; version `0.1.1` does not include it. See the [changelog](CHANGELOG.md) for the upgrade notes.
+
+The command opens a fresh authenticated session in your default browser without restarting the service or signing out existing sessions. On macOS, choose Chrome explicitly:
+
+```sh
+node dist/src/cli.js open --browser "Google Chrome" --data-dir /path/to/your/kanban-data
+```
+
+Opening the plain localhost URL does not sign you in. An unauthenticated browser displays **Browser login required** with instructions, rather than an empty project board. MCP access does not authenticate the browser. After upgrading an older service, rebuild and restart it once to enable the new `open` command; subsequent browser logins need no restart.
 
 To use another port or data directory:
 

@@ -319,7 +319,7 @@ main {
   padding: 12px 0;
 }
 .footnote {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   margin-top: 16px;
 }
@@ -435,8 +435,21 @@ dialog::backdrop {
 #create-error {
   color: #962b27;
 }
-.locked main {
-  opacity: 0.75;
+#login-panel {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  font-size: 16px;
+}
+#login-panel pre,
+#login-panel code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#login-panel pre {
+  background: var(--wash);
+  padding: 16px;
+  border-radius: 6px;
 }
 @media (max-width: 800px) {
   .workspace {

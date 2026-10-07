@@ -22,8 +22,20 @@ export function createSessions(dataDir: string) {
   chmodSync(credentialPath, 0o600);
   if (!/^[a-f0-9]{64}$/.test(readFileSync(credentialPath, "utf8")))
     throw new Error("Invalid local credential file.");
-  let bootstrapToken: string | null = random();
-  const token = bootstrapToken;
+  const links = new Map<string, number>();
+  function issue() {
+    for (const [key, expires] of links)
+      if (expires <= Date.now()) links.delete(key);
+    if (links.size >= 20)
+      throw new HttpError(
+        429,
+        "Too many unused session links. Retry in five minutes.",
+      );
+    const token = random();
+    links.set(token, Date.now() + 5 * 60 * 1000);
+    return token;
+  }
+  const token = issue();
   const sessions = new Map<string, { csrf: string; expires: number }>();
   function session(req: IncomingMessage) {
     const key = req.headers.cookie
@@ -40,16 +52,17 @@ export function createSessions(dataDir: string) {
   }
   return {
     token,
+    issue,
     session,
     login(value: unknown) {
-      if (
-        typeof value !== "string" ||
-        bootstrapToken === null ||
-        value.length !== bootstrapToken.length ||
-        !timingSafeEqual(Buffer.from(value), Buffer.from(bootstrapToken))
-      )
-        throw new HttpError(401, "Invalid or used session link.");
-      bootstrapToken = null;
+      if (typeof value !== "string" || !/^[a-f0-9]{64}$/.test(value))
+        throw new HttpError(401, "Invalid, expired or used session link.");
+      const match = [...links].find(([key]) =>
+        timingSafeEqual(Buffer.from(value), Buffer.from(key)),
+      );
+      if (!match || match[1] <= Date.now())
+        throw new HttpError(401, "Invalid, expired or used session link.");
+      links.delete(match[0]);
       for (const [key, s] of sessions)
         if (s.expires < Date.now()) sessions.delete(key);
       const id = random(),

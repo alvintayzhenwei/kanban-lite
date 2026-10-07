@@ -1,6 +1,8 @@
 import { test, type TestContext } from "node:test";
 import assert from "node:assert/strict";
 import { createServer, request } from "node:http";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { fixture } from "../helpers.js";
 import { startServer } from "../../src/http/server.js";
 async function setup(t: TestContext) {
@@ -64,6 +66,88 @@ test("HTTP session protects reads and cross-site mutations", async (t) => {
       })
     ).status,
     401,
+  );
+});
+test("fresh browser links preserve sessions and require local credentials", async (t) => {
+  const { server, headers, dir } = await setup(t);
+  const authorization = `Bearer ${readFileSync(join(dir, "credential"), "utf8")}`;
+  const rejectedHeaders: Record<string, string>[] = [
+    {},
+    { Authorization: "Bearer wrong" },
+    { Authorization: authorization, Origin: server.url },
+    { Authorization: authorization, Origin: "https://hostile.example" },
+  ];
+  for (const extra of rejectedHeaders) {
+    const rejected = await fetch(`${server.url}/ops/session`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...extra },
+      body: "{}",
+    });
+    assert.equal(rejected.status, 403);
+  }
+  const links: string[] = [];
+  for (let i = 0; i < 2; i++) {
+    const response = await fetch(`${server.url}/ops/session`, {
+      method: "POST",
+      headers: {
+        Authorization: authorization,
+        "Content-Type": "application/json",
+      },
+      body: "{}",
+    });
+    assert.equal(response.status, 200);
+    links.push(((await response.json()) as { url: string }).url);
+  }
+  assert.notEqual(links[0], links[1]);
+  for (const link of links) {
+    assert.equal(new URL(link).origin, server.url);
+    const login = () =>
+      fetch(`${server.url}/api/session`, {
+        method: "POST",
+        headers: { Origin: server.url, "Content-Type": "application/json" },
+        body: JSON.stringify({ token: new URL(link).hash.slice(1) }),
+      });
+    const response = await login();
+    assert.equal(response.status, 200);
+    const cookie = response.headers.get("set-cookie")!.split(";")[0]!;
+    assert.equal(
+      (
+        await fetch(`${server.url}/api/projects`, {
+          headers: { Cookie: cookie },
+        })
+      ).status,
+      200,
+    );
+    assert.equal((await login()).status, 401);
+  }
+  assert.equal(
+    (await fetch(`${server.url}/api/projects`, { headers })).status,
+    200,
+  );
+});
+test("unused browser links expire without ending existing sessions", async (t) => {
+  t.mock.timers.enable({ apis: ["Date"], now: Date.now() });
+  const { server, headers, dir } = await setup(t);
+  const response = await fetch(`${server.url}/ops/session`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${readFileSync(join(dir, "credential"), "utf8")}`,
+      "Content-Type": "application/json",
+    },
+    body: "{}",
+  });
+  assert.equal(response.status, 200);
+  const { url } = (await response.json()) as { url: string };
+  t.mock.timers.tick(5 * 60 * 1000);
+  const login = await fetch(`${server.url}/api/session`, {
+    method: "POST",
+    headers: { Origin: server.url, "Content-Type": "application/json" },
+    body: JSON.stringify({ token: new URL(url).hash.slice(1) }),
+  });
+  assert.equal(login.status, 401);
+  assert.equal(
+    (await fetch(`${server.url}/api/projects`, { headers })).status,
+    200,
   );
 });
 test("HTTP validates payloads, bounds and forged identity", async (t) => {

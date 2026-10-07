@@ -16,7 +16,37 @@
       ><span class="local-label">LOCAL WORKSPACE</span
       ><button id="refresh">Refresh</button>
     </header>
-    <div class="workspace">
+    <section id="login-panel" hidden aria-labelledby="login-title">
+      <h1 id="login-title">Browser login required</h1>
+      <p id="login-error" role="status" aria-live="polite"></p>
+      <p>
+        Your projects and cards are private. This browser needs its own login
+        session; MCP access does not sign you in.
+      </p>
+      <p>
+        From the Kanban Lite repository, run this command in a terminal on the
+        computer running the board:
+      </p>
+      <pre><code>node dist/src/cli.js open --data-dir /path/to/your/kanban-data</code></pre>
+      <p>
+        Replace the path with the data directory shown in the service terminal
+        or configured in your MCP adapter. If using an installed package,
+        replace
+        <code>node dist/src/cli.js open</code> with
+        <code>kanban-lite open</code>.
+      </p>
+      <p>
+        The command opens your default browser without restarting the board or
+        signing out other browsers. On macOS, add
+        <code>--browser "Google Chrome"</code> to open Chrome.
+      </p>
+      <p>
+        Login links work once and expire after five minutes. Sessions last eight
+        hours; run the command again when needed.
+      </p>
+      <button id="retry-login">Retry this browser session</button>
+    </section>
+    <div id="workspace" class="workspace">
       <aside>
         <p class="eyebrow">WORKSPACE</p>
         <h2>Your projects</h2>
@@ -29,7 +59,7 @@
         <div class="sidebar-note">
           <strong>Small board. Clear next step.</strong>
           <p>Keep specs in your repositories. Track work and evidence here.</p>
-          <span class="version">Foundation · 0.1.0</span>
+          <span class="version">Local workspace</span>
         </div>
       </aside>
       <main>
@@ -37,7 +67,7 @@
           <div>
             <p class="eyebrow">YOUR WORK, IN VIEW</p>
             <h1 id="board-title">Project board</h1>
-            <p id="board-summary">Register a repository to begin.</p>
+            <p id="board-summary">Loading projects…</p>
           </div>
           <div class="actions">
             <button id="project-settings" disabled>Project settings</button

@@ -1,6 +1,6 @@
 {
   "name": "@alvintayzhenwei/kanban-lite",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "A lightweight local Kanban board for shared agent workflows",
   "engines": {
@@ -13,6 +13,7 @@
     "dist/src",
     "public",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "SECURITY.md"
   ],

@@ -180,3 +180,42 @@ test("stored HTML remains text and narrow viewport remains usable", async ({
   await page.getByRole("button", { name: "Close card" }).click();
   await expect(page.getByRole("button", { name: "New card" })).toBeVisible();
 });
+test("logged-out browsers get login guidance instead of an empty board", async ({
+  browser,
+}) => {
+  const context = await browser.newContext();
+  try {
+    const page = await context.newPage();
+    await page.goto(server.url);
+    await expect(
+      page.getByRole("heading", { name: "Browser login required" }),
+    ).toBeVisible();
+    await expect(page.getByText(/kanban-lite open/)).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Add project", exact: true }),
+    ).toBeHidden();
+    await expect(
+      page.getByText("Register a repository to begin."),
+    ).toBeHidden();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(
+      page.getByRole("heading", { name: "Browser login required" }),
+    ).toBeVisible();
+  } finally {
+    await context.close();
+  }
+});
+test("session loss during refresh displays login guidance", async ({
+  page,
+  context,
+}) => {
+  await project(page, "Alpha");
+  await context.clearCookies();
+  await page.getByRole("button", { name: "Refresh", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Browser login required" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Add project", exact: true }),
+  ).toBeHidden();
+});

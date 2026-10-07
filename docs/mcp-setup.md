@@ -125,6 +125,7 @@ Read the repository instructions and existing spec/plan documents. Use the Kanba
 - `CONFLICT`: compare returned current state and reconcile; never blindly retry with a newer revision.
 - `POLICY`: current passing evidence is required for Done. MCP offers no human override.
 - Missing tools: verify Node, installed adapter dependencies, host enablement, and a new session after installation.
+- Browser login required: MCP access does not sign in Chrome or Codex's browser. From the source repository, run `node dist/src/cli.js open --data-dir /path/to/kanban-data` with the same directory as the adapter. On macOS, add `--browser "Google Chrome"` to choose Chrome. The command opens a fresh one-time login without restarting the board or invalidating existing sessions. See [browser login instructions](../README.md#start-locally); older services require one rebuild/restart after upgrading.
 
 Tools are `kanban_list_projects`, `kanban_register_project`, `kanban_list_cards`, `kanban_get_card`, `kanban_create_card`, `kanban_update_card`, `kanban_move_card`, `kanban_record_evidence`, `kanban_list_events`, and `kanban_update_project`. Host namespaces may add a prefix. Mutations require the current `expectedRevision`; creation requires 0. Tool results use `structuredContent.result`; failures carry `isError`, code/message, and current state for conflicts.
 

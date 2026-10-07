@@ -4,9 +4,27 @@ import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createServer } from "node:http";
-import { startApplication } from "../../src/cli.js";
+import { startApplication, requestBrowserLogin } from "../../src/cli.js";
 import { backupStore, restoreStore } from "../../src/storage/backup.js";
 import { openStore } from "../../src/storage/database.js";
+
+test("CLI opens another browser login without restarting the service", async (t) => {
+  const dir = mkdtempSync(join(tmpdir(), "kanban-cli-open-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const app = await startApplication({ dataDir: dir, port: 0 });
+  t.after(() => app.close());
+  const url = await requestBrowserLogin(dir);
+  assert.equal(new URL(url).origin, app.url);
+  const login = await fetch(`${app.url}/api/session`, {
+    method: "POST",
+    headers: { Origin: app.url, "Content-Type": "application/json" },
+    body: JSON.stringify({ token: new URL(url).hash.slice(1) }),
+  });
+  assert.equal(login.status, 200);
+  assert.ok(existsSync(join(dir, "service.lock")));
+  await app.close();
+  await assert.rejects(requestBrowserLogin(dir), /start.*--open/i);
+});
 
 test("CLI restart preserves data and prevents a second writer", async (t) => {
   const dir = mkdtempSync(join(tmpdir(), "kanban-cli-"));

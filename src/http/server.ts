@@ -92,6 +92,11 @@ export async function startServer(
         authenticateAgent(req, config.dataDir);
         return send(res, 200, await agentOperation(store, await jsonBody(req)));
       }
+      if (url.pathname === "/ops/session" && method === "POST") {
+        authenticateAgent(req, config.dataDir);
+        object(await jsonBody(req), []);
+        return send(res, 200, { url: `${origin}/?login#${sessions.issue()}` });
+      }
       if (url.pathname === "/ops/backup" && method === "POST") {
         const credential = readFileSync(
           join(config.dataDir, "credential"),
