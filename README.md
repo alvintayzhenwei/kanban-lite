@@ -167,6 +167,17 @@ run `kanban-lite open --data-dir /path/to/your/kanban-data` on the board's host.
 In the authenticated board, expand **Passkeys**, choose **Create passkey**, and
 approve with your device's credential manager, Touch ID, or PIN.
 
+The logged-out page separates returning **Sign in with passkey** from
+**First-time setup**. Expand setup, copy the command, replace the data directory,
+and run it in Terminal. **Check connection** checks this browser’s session; if
+the command opens another browser, continue there. After trusted login, the
+board offers **Create passkey** prominently. You can choose **Do this later**
+and keep using the board. Successful enrollment confirms your board is ready.
+Recovery instructions and key-storage details are under **Need help?**.
+Your chosen credential manager or security key holds the private key. Kanban
+Lite saves only the public key and credential metadata in `board.sqlite`; it
+never receives the private key, fingerprint, or device PIN.
+
 After the eight-hour browser session expires or the service restarts, choose
 **Sign in with passkey** directly in the browser. Enrollment persists in the
 same board database. MCP credentials are separate and do not sign in browsers.
