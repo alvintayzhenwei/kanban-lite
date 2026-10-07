@@ -96,8 +96,10 @@ export async function requestBrowserLogin(dataDir: string): Promise<string> {
     if (
       response.ok &&
       typeof result.url === "string" &&
-      result.url.startsWith(`${owner.url}/?login#`) &&
-      /^[a-f0-9]{64}$/.test(result.url.slice(`${owner.url}/?login#`.length))
+      [owner.url, owner.url.replace("127.0.0.1", "localhost")].some((url) =>
+        result.url!.toString().startsWith(`${url}/?login#`),
+      ) &&
+      /^[a-f0-9]{64}$/.test(new URL(result.url).hash.slice(1))
     )
       return result.url;
   } catch {

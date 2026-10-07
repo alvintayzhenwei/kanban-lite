@@ -14,7 +14,7 @@ test("CLI opens another browser login without restarting the service", async (t)
   const app = await startApplication({ dataDir: dir, port: 0 });
   t.after(() => app.close());
   const url = await requestBrowserLogin(dir);
-  assert.equal(new URL(url).origin, app.url);
+  assert.equal(new URL(url).origin, app.url.replace("127.0.0.1", "localhost"));
   const login = await fetch(`${app.url}/api/session`, {
     method: "POST",
     headers: { Origin: app.url, "Content-Type": "application/json" },
