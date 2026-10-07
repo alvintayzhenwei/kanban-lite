@@ -16,13 +16,13 @@
         ></a
       ><span class="local-label">LOCAL WORKSPACE</span
       ><button id="refresh">Refresh</button>
+      <button id="logout" hidden>Log out</button>
     </header>
     <section id="login-panel" hidden aria-labelledby="login-title">
       <h1 id="login-title">Sign in to Kanban Lite</h1>
       <button id="passkey-login" class="primary">Sign in with passkey</button>
       <p id="passkey-support">
-        Use your enrolled passkey with Touch ID or your device PIN. For
-        first-time setup or recovery, use the command below.
+        Already created a passkey? Sign in with Touch ID or your device PIN.
       </p>
       <a id="localhost-link" hidden>Open localhost for passkeys</a>
       <p id="login-error" role="status" aria-live="polite"></p>
@@ -30,37 +30,64 @@
         Your projects and cards are private. This browser needs its own login
         session; MCP access does not sign you in.
       </p>
-      <p>
-        From the Kanban Lite repository, run this command in a terminal on the
-        computer running the board:
-      </p>
-      <pre><code>node dist/src/cli.js open --data-dir /path/to/your/kanban-data</code></pre>
-      <p>
-        Replace the path with the data directory shown in the service terminal
-        or configured in your MCP adapter. If using an installed package,
-        replace
-        <code>node dist/src/cli.js open</code> with
-        <code>kanban-lite open</code>.
-      </p>
-      <p>
-        The command opens your default browser without restarting the board or
-        signing out other browsers. On macOS, add
-        <code>--browser "Google Chrome"</code> to open Chrome.
-      </p>
-      <p>
-        Login links work once and expire after five minutes. Sessions last eight
-        hours; run the command again when needed.
-      </p>
-      <button id="retry-login">Retry this browser session</button>
+      <details id="first-time-setup">
+        <summary>First-time setup</summary>
+        <h2>Open your private project board</h2>
+        <p>Step 1 of 2: let Codex open a trusted browser session.</p>
+        <p>
+          Copy this prompt into Codex on the computer running your board. Codex
+          will find the existing data directory, so you do not need to edit a
+          path.
+        </p>
+        <details>
+          <summary>View setup prompt</summary>
+          <pre id="setup-prompt">
+Help me set up browser login for this existing Kanban Lite board. Inspect the running Kanban Lite service and local MCP configuration to identify its exact data directory and installed CLI. Reuse the existing service and data directory; do not create another database, start a second writer, or restart a healthy service. Use the CLI open command with that verified data directory to open an authenticated session in my browser. If the service is stopped, confirm the established configuration before starting it. Do not print credentials or login tokens. Once the board opens, guide me to Passkeys → Create passkey. Leave credential-manager selection, Touch ID/PIN approval, and passkey creation to me. If the correct service or directory is ambiguous, ask me instead of guessing.</pre>
+        </details>
+        <button id="copy-setup-prompt">Copy setup prompt</button>
+        <p id="setup-message" role="status" aria-live="polite"></p>
+        <p>
+          After Codex opens the board, choose Create passkey and approve it
+          yourself. Continue in the browser that opens.
+        </p>
+        <button id="retry-login">Check connection</button>
+      </details>
+      <details id="login-help">
+        <summary>Need help?</summary>
+        <p>
+          If you lost your passkey, use First-time setup to recover access and
+          create another. Login links work once and expire after five minutes;
+          browser sessions last eight hours.
+        </p>
+        <p>
+          Running from source? Use
+          <code>node dist/src/cli.js open</code> instead of
+          <code>kanban-lite open</code>. On macOS, add
+          <code>--browser "Google Chrome"</code> to open Chrome.
+        </p>
+        <p>
+          Your credential manager or security key stores the private key. Kanban
+          Lite saves only the public key and credential metadata, never your
+          private key, fingerprint, or PIN.
+        </p>
+      </details>
     </section>
     <div id="workspace" class="workspace">
       <aside>
         <details id="passkey-settings">
           <summary>Passkeys</summary>
-          <p>
-            Create a passkey after signing in. Changes require a login within
-            five minutes.
-          </p>
+          <div id="passkey-onboarding" hidden>
+            <h2>Make your next sign-in easier</h2>
+            <p>
+              Step 2 of 2: create a passkey using Touch ID or your device PIN.
+            </p>
+            <p>
+              Your credential manager stores the private key. This board keeps
+              only its public key and credential metadata.
+            </p>
+            <button id="skip-passkey">Do this later</button>
+          </div>
+          <p>Changes require a login verified within five minutes.</p>
           <button id="create-passkey">Create passkey</button>
           <button id="verify-passkey">Verify with passkey</button>
           <p id="passkey-message" role="status" aria-live="polite"></p>

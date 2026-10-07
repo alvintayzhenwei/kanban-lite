@@ -25,6 +25,7 @@ function message(error, target = "message") {
 }
 function loginRequired(error) {
   $("workspace").hidden = true;
+  $("logout").hidden = true;
   $("login-panel").hidden = false;
   $("login-error").textContent = error.message;
   for (const dialog of document.querySelectorAll("dialog[open]"))
@@ -398,7 +399,9 @@ async function load() {
     await refresh();
     $("login-panel").hidden = true;
     $("workspace").hidden = false;
+    $("logout").hidden = false;
     $("message").textContent = "";
+    await refreshPasskeys();
   } catch (error) {
     if (error.status === 401) loginRequired(error);
     else message(error);
@@ -410,7 +413,12 @@ await load();
 async function refreshPasskeys() {
   const list = $("passkey-list");
   list.replaceChildren();
-  for (const key of await request("/api/passkeys")) {
+  const keys = await request("/api/passkeys");
+  $("passkey-onboarding").hidden =
+    keys.length > 0 ||
+    sessionStorage.getItem("passkey-onboarding-skipped") === "true";
+  if (!$("passkey-onboarding").hidden) $("passkey-settings").open = true;
+  for (const key of keys) {
     const row = element("div");
     row.append(
       element("p", "Created " + new Date(key.createdAt).toLocaleString()),
@@ -432,7 +440,8 @@ $("passkey-settings").addEventListener("toggle", () => {
 });
 $("create-passkey").onclick = safely(async () => {
   await registerPasskey();
-  $("passkey-message").textContent = "Passkey created.";
+  $("passkey-message").textContent =
+    "Passkey created. Your board is ready; next time, choose Sign in with passkey.";
   await refreshPasskeys();
 }, "passkey-message");
 $("verify-passkey").onclick = safely(async () => {
@@ -454,3 +463,19 @@ if (location.hostname !== "localhost") {
   $("passkey-support").textContent =
     "Passkeys are unavailable in this browser. Open Chrome or use CLI recovery.";
 }
+
+$("logout").onclick = safely(async () => {
+  await request("/api/logout", { method: "POST", body: {} });
+  location.replace("/");
+});
+
+$("skip-passkey").onclick = () => {
+  sessionStorage.setItem("passkey-onboarding-skipped", "true");
+  $("passkey-onboarding").hidden = true;
+  $("passkey-settings").open = false;
+};
+$("copy-setup-prompt").onclick = safely(async () => {
+  await navigator.clipboard.writeText($("setup-prompt").textContent);
+  $("setup-message").textContent =
+    "Copied. Paste this prompt into Codex on the computer running your board.";
+}, "setup-message");

@@ -25,13 +25,19 @@ test("owner enrolls then signs in after cookies expire and service restarts", as
   });
   try {
     await page.goto(server.bootstrapUrl);
-    await page.getByText("Passkeys", { exact: true }).click();
+    await expect(page.locator("#passkey-onboarding")).toBeVisible();
     await page
       .getByRole("button", { name: "Create passkey", exact: true })
       .click();
-    await expect(page.getByText("Passkey created.")).toBeVisible();
-    await context.clearCookies();
-    await page.reload();
+    await expect(
+      page.getByText("Passkey created.", { exact: false }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Log out", exact: true }).click();
+    await expect(page.locator("#login-panel")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Log out", exact: true }),
+    ).toBeHidden();
+    expect(store.db.prepare("SELECT id FROM passkeys").all()).toHaveLength(1);
     await page
       .getByRole("button", { name: "Sign in with passkey", exact: true })
       .click();
@@ -46,7 +52,8 @@ test("owner enrolls then signs in after cookies expire and service restarts", as
       .getByRole("button", { name: "Sign in with passkey", exact: true })
       .click();
     await expect(page.locator("#workspace")).toBeVisible();
-    await page.getByText("Passkeys", { exact: true }).click();
+    if ((await page.locator("#passkey-settings").getAttribute("open")) === null)
+      await page.getByText("Passkeys", { exact: true }).click();
     await page
       .getByRole("button", { name: "Remove passkey", exact: true })
       .click();
@@ -79,11 +86,14 @@ test("signed ceremonies reject tampered owner, origin, RP data and replay", asyn
   });
   try {
     await page.goto(server.bootstrapUrl);
-    await page.getByText("Passkeys", { exact: true }).click();
+    if ((await page.locator("#passkey-settings").getAttribute("open")) === null)
+      await page.getByText("Passkeys", { exact: true }).click();
     await page
       .getByRole("button", { name: "Create passkey", exact: true })
       .click();
-    await expect(page.getByText("Passkey created.")).toBeVisible();
+    await expect(
+      page.getByText("Passkey created.", { exact: false }),
+    ).toBeVisible();
     await context.clearCookies();
     await page.reload();
     for (const mode of ["owner", "origin", "rp", "verification", "signature"]) {
@@ -159,11 +169,58 @@ test("unsupported browsers keep CLI recovery visible without exposing board data
       ),
     ).toBeVisible();
     await expect(page.locator("#workspace")).toBeHidden();
+    await page.getByText("First-time setup", { exact: true }).click();
     await expect(
-      page
-        .locator("#login-panel")
-        .getByText("kanban-lite open", { exact: true }),
+      page.getByRole("button", { name: "Copy setup prompt", exact: true }),
     ).toBeVisible();
+    await page.getByText("View setup prompt", { exact: true }).click();
+    await expect(page.locator("#setup-prompt")).toContainText(
+      "exact data directory",
+    );
+    await expect(
+      page.getByRole("button", { name: "Check connection", exact: true }),
+    ).toBeVisible();
+    await page.getByText("Need help?", { exact: true }).click();
+    await expect(page.locator("#login-help")).toContainText("private key");
+  } finally {
+    await server.close();
+    store.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("first-time users can cancel enrollment and defer it without losing board access", async ({
+  page,
+}) => {
+  const dir = mkdtempSync(join(tmpdir(), "passkey-onboarding-"));
+  const store = openStore(join(dir, "board.sqlite"));
+  const server = await startServer(store, { dataDir: dir, port: 0 });
+  try {
+    await page.goto(server.bootstrapUrl);
+    await expect(page.locator("#passkey-onboarding")).toBeVisible();
+    await page.evaluate(() => {
+      (
+        window as unknown as {
+          SimpleWebAuthnBrowser: { startRegistration: () => Promise<never> };
+        }
+      ).SimpleWebAuthnBrowser.startRegistration = async () => {
+        throw new DOMException("Canceled", "NotAllowedError");
+      };
+    });
+    await page
+      .getByRole("button", { name: "Create passkey", exact: true })
+      .click();
+    await expect(page.locator("#passkey-message")).toContainText(
+      "canceled or timed out",
+    );
+    await expect(page.locator("#workspace")).toBeVisible();
+    await page
+      .getByRole("button", { name: "Do this later", exact: true })
+      .click();
+    await expect(page.locator("#passkey-onboarding")).toBeHidden();
+    await page.reload();
+    await expect(page.locator("#workspace")).toBeVisible();
+    await expect(page.locator("#passkey-onboarding")).toBeHidden();
   } finally {
     await server.close();
     store.close();

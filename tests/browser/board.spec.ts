@@ -190,11 +190,19 @@ test("logged-out browsers get login guidance instead of an empty board", async (
     await expect(
       page.getByRole("heading", { name: "Sign in to Kanban Lite" }),
     ).toBeVisible();
+    await page.getByText("First-time setup", { exact: true }).click();
     await expect(
-      page
-        .locator("#login-panel")
-        .getByText("kanban-lite open", { exact: true }),
+      page.getByRole("button", { name: "Copy setup prompt", exact: true }),
     ).toBeVisible();
+    await page.getByText("View setup prompt", { exact: true }).click();
+    await expect(page.locator("#setup-prompt")).toContainText(
+      "exact data directory",
+    );
+    await expect(
+      page.getByRole("button", { name: "Check connection", exact: true }),
+    ).toBeVisible();
+    await page.getByText("Need help?", { exact: true }).click();
+    await expect(page.locator("#login-help")).toContainText("private key");
     await expect(
       page.getByRole("button", { name: "Add project", exact: true }),
     ).toBeHidden();
